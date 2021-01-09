@@ -1,0 +1,53 @@
+<svg viewBox="0 0 420 405" width=420 height=405 xmlns="http://www.w3.org/2000/svg">
+  <g svg-dialog-title>
+    <text x="210" text-anchor="middle">Combat</text>
+  </g>
+  <g [style.display]="hideFor(tAttack)">
+    <text x="210" y="50" text-anchor="middle">The Operative has discovered the {{defender!.title}} in</text>
+    <text x="210" y="70" text-anchor="middle">{{defender!.territory!.title}} and must combat them.</text>
+  </g>
+  <g [style.display]="showFor(tAttack)">
+    <text x="210" y="50" text-anchor="middle">The Terrorist has attacked Operatives in</text>
+    <text x="210" y="70" text-anchor="middle">{{defender!.territory!.title}} and must combat them.</text>
+  </g>
+  <use x="100" y="110" [attr.href]="meepleHref()" [style]="meepleStyle()"/>
+  <use x="250" y="110" [attr.href]="meepleHref(0)" [style]="meepleStyle(0)"/>
+  <use x="385" y="110" [attr.href]="meepleHref(1)" [style]="meepleStyle(1)"/>
+  <use x="320" y="110" [attr.href]="meepleHref(2)" [style]="meepleStyle(2)"/>
+
+  <g [style.display]="showFor(!rolls &amp;&amp; !defender)" transform="translate(15 200)">
+    <text>Pick a defender.</text>
+  </g>
+
+  <g [style.display]="showFor(rolls)" transform="translate(0 220)">
+    <g transform="translate(80 0)">
+      <use [attr.href]="dieHref('a')" [attr.style]="dieStyle('a')"/>
+      <text x="20"> + {{rolls &amp;&amp; rolls.a.m}} = {{rolls &amp;&amp; rolls.a.t}}</text>
+    </g>
+    <g [attr.transform]="'translate('+(250+defenderIndexToPlace(0)*35)+' 0)'">
+      <use [attr.href]="dieHref('d')" [attr.style]="dieStyle('d')"/>
+      <text x="20"> + {{rolls &amp;&amp; rolls.d.m}} = {{rolls &amp;&amp; rolls.d.t}}</text>
+   </g>
+  </g>
+
+  <g [style.display]="showFor(rolls &amp;&amp; rolls.d.t&gt;0)" transform="translate(15 200)">
+    <text [style.display]="showFor('SecretAgents')" >&#8226; Secret Agents throw two dice against traps and discard</text>
+    <text [style.display]="showFor('SecretAgents')" x="10" y="20">the higher roll.</text>
+    <text [style.display]="hideFor('SecretAgents')" y="20">&#8226; {{data.attacker.title}} throw one die against traps.</text>
+    <text y="45">&#8226; The Operative's strength will go down by the amount rolled.</text>
+    <text y="70">&#8226; The Operative currently has a strength of {{data.attacker &amp;&amp; data.attacker.team.strength}}.</text>
+    <text y="95">&#8226; If the Operative's strength goes to zero they will be dead until</text>
+    <text x="10" y="115">their next turn and the Terrorist will receive {{viktoryPoints(3)}}.</text>
+  </g>
+
+  <g [style.display]="showFor(!rolls &amp;&amp; defender)" transform="translate(15 360)">
+    <text>Push the button, Max.</text>
+  </g>
+
+  <g svg-dialog-action>
+    <g svg-dialog-button="flat" width="180" (click)="close()">
+      <text [style.display]="hideFor(rolls)">Roll For Combat</text>
+      <text [style.display]="showFor(rolls)">{{data.attacker.team.strength===0 ? "Done" : "Next"}}</text>
+    </g>
+  </g>
+</svg>

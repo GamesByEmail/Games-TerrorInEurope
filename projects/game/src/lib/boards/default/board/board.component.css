@@ -1,0 +1,314 @@
+/* latin-ext */
+@font-face {
+  font-family: 'Felipa';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/felipa/v7/FwZa7-owz1Eu4F_AQd6F8M0.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Felipa';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/felipa/v7/FwZa7-owz1Eu4F_AT96F.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+:host {
+  user-select: none;
+}
+.waterText text {
+  font-family: Felipa;
+  font-size: 32px;
+  font-weight: bold;
+  dominant-baseline: middle;
+  text-anchor: middle;
+  transform: scale(1.2, 1);
+  fill: rgb(6, 94, 238);
+  pointer-events: none;
+}
+
+.waterText.size2 text {
+  font-size: 28px;
+}
+
+.waterText.size3 text {
+  font-size: 25px;
+}
+
+.waterBorder {
+  stroke-width: 6;
+  stroke: rgb(0, 88, 237);
+}
+
+.compassText {
+  font-family: Felipa;
+  font-size: 18px;
+  font-weight: bold;
+  dominant-baseline: middle;
+  text-anchor: middle;
+  fill: rgb(10, 10, 10);
+  pointer-events: none;
+}
+
+.cityText {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+  dominant-baseline: middle;
+  text-anchor: middle;
+  fill: rgb(10, 10, 10);
+  stroke: rgb(255, 255, 255);
+  stroke-width: 2.5;
+  paint-order: stroke fill;
+  pointer-events: none;
+}
+.cityText.metro {
+  font-size: 19px;
+  text-transform: uppercase;
+}
+
+.cityText.metroB {
+  font-size: 22px;
+  text-transform: uppercase;
+}
+.seenText {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 40px;
+  font-weight: bold;
+  stroke:none;
+  fill:rgb(255,0,0);
+  dominant-baseline: bottom;
+  text-anchor: right;
+}
+.strengthText {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  stroke:none;
+  fill:rgb(255,0,0);
+  dominant-baseline: middle;
+  text-anchor: middle;
+  stroke: rgb(0, 0, 0);
+  stroke-width: 2.5;
+  paint-order: stroke fill;
+  pointer-events: none;
+}
+.anchor {
+  pointer-events: none;
+}
+
+.road {
+  stroke-width: 6;
+  stroke: rgb(51, 51, 51);
+  fill: none;
+  pointer-events: none;
+}
+
+.roadAndRail {
+  stroke-width: 12;
+  stroke: white;
+  fill: none;
+}
+
+.rail {
+  stroke-width: 2;
+  stroke: rgb(72, 44, 47);
+  fill: none;
+  pointer-events: none;
+}
+
+.ties {
+  stroke-width: 12;
+  stroke-dasharray: 2 3.9;
+  stroke: rgb(108, 17, 21);
+  fill: none;
+  pointer-events: none;
+}
+
+.land {
+  stroke-linejoin: round;
+  stroke-width: 6;
+  fill: transparent;
+  transition: transform 0.5s;
+  spointer-events: none;
+}
+
+.lands.hovrey:hover .land {
+  transform: scale(1.1);
+}
+
+.British .land {
+  stroke: rgb(233, 205, 7);
+  fill: rgb(252, 235, 125);
+}
+
+.Nordic .land {
+  stroke: rgb(63, 154, 88);
+  fill: rgb(139, 207, 156);
+}
+
+.Iberian .land {
+  stroke: rgb(204, 98, 98);
+  fill: rgb(216, 136, 137);
+}
+
+.Franco .land {
+  stroke: rgb(5, 112, 106);
+  fill: rgb(12, 167, 159);
+}
+
+.German .land {
+  stroke: rgb(147, 141, 136);
+  fill: rgb(186, 182, 177);
+}
+
+.Slavic .land {
+  stroke: rgb(46, 115, 156);
+  fill: rgb(89, 163, 206);
+}
+
+.Baltic .land {
+  stroke: rgb(141, 65, 67);
+  fill: rgb(180, 92, 95);
+}
+
+.African .land {
+  stroke: rgb(69, 120, 56);
+  fill: rgb(96, 164, 79);
+}
+
+.Italian .land {
+  stroke: rgb(104, 88, 124);
+  fill: rgb(146, 131, 165);
+}
+
+.Balkan .land {
+  stroke: rgb(230, 133, 53);
+  fill: rgb(238, 173, 119);
+}
+
+.Ukrainian .land {
+  stroke: rgb(151, 134, 83);
+  fill: rgb(183, 169, 125);
+}
+
+.Turk .land {
+  stroke: rgb(69, 120, 56);
+  fill: rgb(96, 164, 79);
+}
+
+.urbanPair {
+  transition: transform 0.5s;
+}
+
+.cityText {
+  transition: transform 0.5s;
+}
+.fade {
+  opacity: 0.6;
+}
+.token {
+  stroke:rgb(0,0,0);
+  stroke-width:3;
+}
+.token.aged {
+  stroke:rgb(0,0,0);
+  stroke-width:6;
+}
+.token.won {
+  stroke:rgb(152,0,0);
+  stroke-width:6;
+}
+.token.lost {
+  stroke:rgb(0,128,0);
+  stroke-width:6;
+}
+.urban {
+  stroke:rgb(51,51,51);
+  stroke-width:6;
+}
+.urban.looksOccupied {
+  transform: scale(1.5);
+}
+.urbanPair.canSelect:hover {
+  transform: scale(1.3);
+}
+.gameStarted .urbanPair.canSelect .urban {
+  stroke:rgb(255,51,51);
+}
+.token.placed {
+  opacity: 0.7;
+  pointer-events: none;
+}
+.ageText {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  stroke:none;
+  fill:rgb(255,0,0);
+  dominant-baseline: middle;
+  text-anchor: middle;
+  stroke: rgb(0, 0, 0);
+  stroke-width: 2.5;
+  paint-order: stroke fill;
+  pointer-events: none;
+}
+.tokenSelect {
+  transform:scale(0);
+  transition:transform 0.5s;
+}
+.urbanPair.canSelect:hover .tokenSelect,
+.urbanPair.canSelect.showTokenSelect .tokenSelect {
+  transform:scale(1);
+}
+
+.British .urban {
+  fill: rgb(233, 205, 7);
+}
+
+.Nordic .urban {
+  fill: rgb(63, 154, 88);
+}
+
+.Iberian .urban {
+  fill: rgb(204, 98, 98);
+}
+
+.Franco .urban {
+  fill: rgb(5, 112, 106);
+}
+
+.German .urban {
+  fill: rgb(147, 141, 136);
+}
+
+.Slavic .urban {
+  fill: rgb(46, 115, 156);
+}
+
+.Baltic .urban {
+  fill: rgb(141, 65, 67);
+}
+
+.African .urban {
+  fill: rgb(69, 120, 56);
+}
+
+.Italian .urban {
+  fill: rgb(104, 88, 124);
+}
+
+.Balkan .urban {
+  fill: rgb(230, 133, 53);
+}
+
+.Ukrainian .urban {
+  fill: rgb(151, 134, 83);
+}
+
+.Turk .urban {
+  fill: rgb(69, 120, 56);
+}

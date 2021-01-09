@@ -1,0 +1,76 @@
+<gamesbyemail-base-rules [gameName]="'Terror In Europe'">
+
+  <a name="Overview">
+    <h2>Overview</h2>
+    <p>Everybody is a suspect.</p>
+  </a>
+
+  <a name="Teams">
+    <h2>Teams</h2>
+    <p>The players:</p>
+    <a name="Teams.Secret%20Agents">
+      <p>Secret Agents<br>
+        <span class="piece-image" [template-projection]="pieceLibrary" [key]="{type:'SecretAgents'}"></span>
+      </p>
+    </a>
+
+    <a name="Teams.Bomb%20Squad">
+      <p>Bomb Squad<br>
+        <span class="piece-image" [template-projection]="pieceLibrary" [key]="{type:'BombSquad'}"></span><br>
+      </p>
+    </a>
+
+    <a name="Teams.Special%20Forces">
+      <p>Special Forces<br>
+        <span class="piece-image" [template-projection]="pieceLibrary" [key]="{type:'SpecialForces'}"></span><br>
+      </p>
+    </a>
+
+    <a name="Teams.Informant%20Network">
+      <p>Informant Network<br>
+        They are everywhere. But not on the board.
+      </p>
+    </a>
+
+    <a name="Teams.Terrorist">
+      <p>Terrorist<br>
+        <span class="piece-image" [template-projection]="pieceLibrary" [key]="{type:'Terrorist'}"></span><br>
+      </p>
+    </a>
+  </a>
+
+  <a name="Chaos">
+    <h2>Chaos</h2>
+    <p>Tools of the terrorist:</p>
+    <a name="Chaos.Trap">
+      <p>Trap<br>
+        <span class="piece-image" [template-projection]="pieceLibrary" [key]="{type:'Trap'}"></span>
+      </p>
+    </a>
+
+    <a name="Chaos.Recruit">
+      <p>Recruit<br>
+        <span class="piece-image" [template-projection]="pieceLibrary" [key]="{type:'Recruit'}"></span><br>
+      </p>
+    </a>
+
+    <a name="Chaos.Bomb">
+      <p>Bomb<br>
+        <span class="piece-image" [template-projection]="pieceLibrary" [key]="{type:'Bomb'}"></span><br>
+      </p>
+    </a>
+  </a>
+
+  <a name="About">
+    <h2>About&nbsp;Terror&nbsp;In&nbsp;Europe</h2>
+    <p>GamesByEmail's Terror&nbsp;In&nbsp;Europe online game is a clone of Morrison Games' board game <a
+        target="MorrisonGames"
+        href="http://www.mcssl.com/app/aftrack.asp?AFID=435271&amp;u=www.terrorInEurope.com/">Terror&nbsp;In&nbsp;Europe</a>®.
+    </p>
+    <p>"Terror&nbsp;In&nbsp;Europe" is a registered trademark of Morrison Games, who were kind enough to license it to
+      GamesByEmail.com.</p>
+  </a>
+
+  <svg gamesbyemail-games-terrorInEurope-default-piecelibrary #pieceLibrary width="0" height="0" style="display:inline">
+  </svg>
+</gamesbyemail-base-rules>

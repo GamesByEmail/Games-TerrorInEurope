@@ -1,0 +1,25 @@
+<ng-template #StartOfGame>
+  Start of Game
+</ng-template>
+<ng-template #Move let-game="game" let-move="move" let-pieces="pieces">
+  <span class="piece" [template-projection]="pieces" [key]="{type:pieceNameFromState(move.piece),team:teamIdFromState(move.piece),small:true}"></span>
+  {{spaceName(game,move.from)}}
+  <span *ngIf="move.capture" class="piece" [template-projection]="pieces" [key]="{type:pieceNameFromState(move.capture.piece),team:teamIdFromState(move.capture.piece),small:true}"
+    title="Captured"></span>
+  <span *ngIf="!move.capture">-</span>
+  {{spaceName(game,move.to)}}
+  <span *ngIf="move.capture && move.capture.from!==move.to" title="En Passant">e.p.</span>
+  <span *ngIf="move.promote" class="piece" [template-projection]="pieces" [key]="{type:pieceNameFromState(move.promote),team:teamIdFromState(move.promote),small:true}"
+    title="Promoted"></span>
+  <span *ngIf="move.inCheck && move.canMove!==false" title="Check">+</span>
+  <span *ngIf="move.inCheck && move.canMove===false" title="Checkmate">#</span>
+  <span *ngIf="!move.inCheck && move.canMove===false" title="Stalemate">$</span>
+  <span *ngIf="move.offerDraw" title="Draw Offered">(=)</span>
+</ng-template>
+<ng-template #Resigned let-game="game" let-move="move" let-pieces="pieces">
+  <span class="piece" [template-projection]="pieces" [key]="{type:'King',team:teamIdFromState(move.piece),small:true,resigned:true}"></span>
+  Resigned
+</ng-template>
+<ng-template #AcceptDraw let-game="game" let-move="move" let-pieces="pieces">
+  <span title="Draw Accepted">(=)</span>
+</ng-template>

@@ -1,0 +1,19 @@
+.button {
+  cursor:pointer;
+}
+.button > rect {
+  stroke:#444444;
+  stroke-width: 4;
+  fill:#cccccc;
+}
+.button:hover > rect {
+  stroke:#000000;
+  fill:#bbbbbb;
+}
+.button:active:hover > rect {
+  stroke:#000000;
+  fill:#aaaaaa;
+}
+.button:active:hover > * {
+  transform: translate(1px, 1px);
+}
