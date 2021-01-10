@@ -6,7 +6,7 @@ import { TeamId } from './team-id';
 import { Move, IModMove } from './move';
 import { TEAM_STATE_DELIMETER } from './delimeter';
 import { Operative } from './piece';
-import { operativeDieFill, terroristDieFill } from './cheat';
+import { maybeTie, operativeDieFill, terroristDieFill } from './cheat';
 
 export interface ITeamSave extends IBaseTeamSave<Game, IGameOptions, IGameState, IGameSave, Board, IBoardSave, Territory, ITerritorySave, Team, TeamId, ITeamSave, Move, IModMove> {
   strength: number
@@ -121,9 +121,26 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
   rollForCombat(opponent: Team, inCity: Territory, asAttacker: boolean): number[] {
     this.rollDice(1);
     this.rolls.push(this.getCombatModifier(opponent, inCity, asAttacker));
+    maybeTie(this.rolls);
     if (this.isTerrorist())
       this.rolls.push(operativeOrder.indexOf(opponent.id));
     return this.getRolls()!;
   }
+  
+  combat(opponent: Team, inCity:Territory) {
+    const ourRolls = this.rollForCombat(opponent, inCity, false);
+    const opponentRolls = opponent.rollForCombat(this, inCity, true);
+    const ourTotal = ourRolls[0] + ourRolls[1];
+    const opponentTotal = opponentRolls[0] + opponentRolls[1];
+    if (ourTotal === opponentTotal)
+      return this.isOperative();
+    if (ourTotal < opponentTotal) {
+      this.alterStrength(ourTotal - opponentTotal);
+      return this.strength === 0;
+    }
+    opponent.alterStrength(opponentTotal - ourTotal);
+    return opponent.strength === 0;
+  }
+
 }
 

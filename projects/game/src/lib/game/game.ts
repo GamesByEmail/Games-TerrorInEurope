@@ -16,7 +16,7 @@ import { None } from './pieces/token/none';
 import { BehaviorSubject } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { Meeple } from './pieces/meeple/meeple';
-import { CovertOpToken } from './piece';
+import { CovertOpToken, Operative } from './piece';
 
 export interface IGameOptions {
   dark?: boolean;
@@ -56,68 +56,21 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
                 this.beginMeepleMove(meeple);
               else {
                 const token = meeple.territory!.findToken<CovertOpToken>(undefined, undefined, false);
-                const terrorist = meeple.territory!.findTerrorist();
-                if (token) {
-                  this.modalOpen.next(true);
-                  this.board.openCovertOps(meeple, token, () => meeple.territory!.mapData.location)
-                    .subscribe(() => {
-                      this.modalOpen.next(false);
-                      meeple.workToken(token);
-                      if (!terrorist || turnTeam.strength === 0) {
-                        this.board.game.incrementTurn();
-                        this.modalOpen.next(true);
-                        this.board.openCovertOps(meeple, token, () => meeple.territory!.mapData.location)
-                          .subscribe(() => {
-                            this.modalOpen.next(false);
-                          });
-                      }
-                      this.saveIt();
-                    });
-                }
-                else
+                if (token)
+                  this.resolveCovertOps(turnTeam, meeple, token);
+                else {
+                  const terrorist = meeple.territory!.findTerrorist();
                   if (turnTeam.hasRolls())
-                    if (terrorist && terrorist.team.hasRolls()) {
-                    } else {
-                      this.modalOpen.next(true);
-                      this.board.openCovertOps(meeple, meeple.territory!.findToken<CovertOpToken>()!, () => meeple.territory!.mapData.location)
-                        .subscribe(() => {
-                          turnTeam.clearRolls();
-                          this.modalOpen.next(true);
-                          this.board.openCombat(meeple, terrorist!, () => meeple.territory!.mapData.location)
-                            .subscribe(opponent => {
-                              this.modalOpen.next(false);
-                              alert(1);
-                              if (meeple.combat(opponent as Terrorist)) {
-                                this.board.game.incrementTurn();
-                                this.modalOpen.next(true);
-                                this.board.openCombat(meeple, terrorist!, () => meeple.territory!.mapData.location)
-                                  .subscribe(() => {
-                                    this.modalOpen.next(false);
-                                  });
-                              }
-                              this.saveIt();
-                            });
-                        });
-                    }
+                    if (terrorist && terrorist.team.hasRolls())
+                      this.resolveCombat(meeple, terrorist);
+                    else
+                      this.resolveCovertOps(turnTeam, meeple, meeple.territory!.findToken<CovertOpToken>()!);
                   else
-                    if (terrorist) {
-                      this.modalOpen.next(true);
-                      this.board.openCombat(meeple, terrorist, () => meeple.territory!.mapData.location)
-                        .subscribe(opponent => {
-                          this.modalOpen.next(false);
-                          alert(2);
-                          if (meeple.combat(opponent as Terrorist)) {
-                            this.board.game.incrementTurn();
-                            this.modalOpen.next(true);
-                            this.board.openCombat(meeple, terrorist, () => meeple.territory!.mapData.location)
-                              .subscribe(() => {
-                                this.modalOpen.next(false);
-                              });
-                          }
-                          this.saveIt();
-                        });
-                    } else
+                    if (terrorist)
+                      this.resolveCombat(meeple, terrorist);
+                    else
                       this.beginMeepleMove(meeple);
+                }
               }
             else {
               const operatives = meeple.territory!.findOperatives(true);
@@ -131,7 +84,52 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
         }
       });
   }
+  resolveCovertOps(turnTeam: Team, meeple: Operative, token: CovertOpToken) {
+    this.modalOpen.next(true);
+    this.board.openCovertOps(meeple, token, () => meeple.territory!.mapData.location)
+      .subscribe(() => {
+        this.modalOpen.next(false);
+        this.clearRolls();
+        const terrorist = meeple.territory!.findTerrorist();
+        if (!token.result) {
+          meeple.workToken(token);
+          if (!terrorist || turnTeam.strength === 0) {
+            this.board.game.incrementTurn();
+            this.modalOpen.next(true);
+            this.board.openCovertOps(meeple, token, () => meeple.territory!.mapData.location)
+              .subscribe(() => this.modalOpen.next(false));
+          }
+          this.saveIt();
+        } else {
+          this.resolveCombat(meeple, terrorist!);
+        }
+      });
+  }
+  resolveCombat(attacker: Operative, defenders: Terrorist): void
+  resolveCombat(attacker: Terrorist, defender: Operative[]): void
+  resolveCombat(attacker: Operative | Terrorist, defender: Operative[] | Terrorist) {
+    this.modalOpen.next(true);
+    this.board.openCombat(attacker as Operative, defender as Terrorist, () => attacker.territory!.mapData.location)
+      .subscribe(opponent => {
+        this.modalOpen.next(false);
+        this.clearRolls();
+        if (opponent) {
+          if (attacker.team.combat(opponent.team, attacker.territory!)) {
+            this.board.game.incrementTurn();
+            this.modalOpen.next(true);
+            this.board.openCombat(attacker as Operative, defender as Terrorist, () => attacker.territory!.mapData.location)
+              .subscribe(() => this.modalOpen.next(false));
+          }
+          this.saveIt();
+        } else
+          this.beginMeepleMove(attacker);
+      });
+  }
+  clearRolls() {
+    this.teams.forEach(t => t.clearRolls());
+  }
   beginMeepleMove(meeple?: Meeple) {
+    this.teams.forEach(t => t.clearRolls());
     const availableMoves = meeple ? meeple.availableMoves() : this.board.territories;
     availableMoves.forEach(c => c.canSelect = true);
   }
@@ -231,7 +229,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   }
   saveIt() {
     const state = this.commit();
-    navigator.clipboard.writeText(JSON.stringify(state, null, 2) + "\n");
+    navigator.clipboard.writeText("return this.game.setState("+JSON.stringify(state, null, 2) + ");\n");
     this.setState(state);
   }
 

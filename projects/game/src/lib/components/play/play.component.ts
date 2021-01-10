@@ -40,20 +40,19 @@ export class PlayComponent implements OnInit {
       ]
     };
     this.game.setGameData(gameData);
-    return;
-    this.game.setState(
-      {
-        "moveNumber": 12,
-        "board": "6#r0&T|7#A&B&F|8#t2|9#b1|",
-        "teams": [
-          "@6",
-          "6",
-          "6",
-          "6",
-          "12"
-        ],
-        "moves": []
-      }
-    );
+    return;    
+    return this.game.setState({
+      "moveNumber": 12,
+      "board": "6#r0&T|7#A&B&F|8#t2|9#b1|",
+      "teams": [
+        "@6",
+        "6",
+        "6",
+        "6",
+        "12"
+      ],
+      "moves": []
+    });
+
   }
 }

@@ -49,14 +49,14 @@ export class CombatDialogComponent {
           r: aRolls[0],
           m: aRolls[1],
           t: aRolls[0] + aRolls[1],
-          d: Math.max(0, (aRolls[0] + aRolls[1]) - (dRolls[0] + dRolls[1])),
+          d: Math.max(0, (dRolls[0] + dRolls[1]) - (aRolls[0] + aRolls[1])),
           s: this.data.attacker.team.strength
         },
         d: {
           r: dRolls[0],
           m: dRolls[1],
           t: dRolls[0] + dRolls[1],
-          d: Math.max(0, (dRolls[0] + dRolls[1]) - (aRolls[0] + aRolls[1])),
+          d: Math.max(0, (aRolls[0] + aRolls[1]) - (dRolls[0] + dRolls[1])),
           s: this.defender.team.strength
         },
         t: <any>undefined,
@@ -76,15 +76,21 @@ export class CombatDialogComponent {
       return 2;
     return defenderIndex + (3 - this.data.defenders.length);
   }
+  defenderFromPlace(defenderPlace: number) {
+    if (isICombatDialogDataOperativeVersusTerrorist(this.data))
+      return defenderPlace === 2 ? this.data.defender : undefined;
+    const defenderIndex = defenderPlace - (3 - this.data.defenders.length);
+    if (defenderIndex < 0 && defenderIndex >= this.data.defenders.length)
+      return undefined;
+    return this.data.defenders[defenderIndex];
+  }
+  defenderStrength(defenderPlace?: number) {
+    const meep=typeof (defenderPlace) === "number" ? this.defenderFromPlace(defenderPlace) : this.data.attacker;
+    return meep ? meep.team.strength : undefined;
+  }
   meepleHref(defenderPlace?: number) {
-    if (typeof (defenderPlace) === "number")
-      if (isICombatDialogDataOperativeVersusTerrorist(this.data))
-        return defenderPlace === 2 ? '#' + this.data.defender.templateKey.type : "";
-      else {
-        const defenderIndex = defenderPlace - (3 - this.data.defenders.length);
-        return defenderIndex >= 0 && defenderIndex < this.data.defenders.length ? '#' + this.data.defenders[defenderIndex].templateKey.type : "";
-      }
-    return '#' + this.data.attacker.templateKey.type;
+    const meep=typeof (defenderPlace) === "number" ? this.defenderFromPlace(defenderPlace) : this.data.attacker;
+    return meep ? "#" + meep.templateKey.type + (meep.team.strength === 0 ? "Dead" : "") : "";
   }
   meepleStyle(defenderPlace?: number) {
     if (typeof (defenderPlace) === "number")
@@ -105,12 +111,12 @@ export class CombatDialogComponent {
     if (!this.rolls)
       return "";
     const o = index === 'a' ? 'd' : 'a';
-    const strength = index === 'a' ? this.data.attacker.team.strength : this.defender!.team.strength;
+    const strength = index === 'a' ? this.rolls.a.s+this.rolls.a.d : this.rolls.d.s+this.rolls.d.d;
     const miss = this.rolls[o].t - this.rolls[index].m;
-    const critical = miss + strength;
-    if (this.rolls[index].r <= miss)
+    const critical = miss - strength;
+    if (this.rolls[index].r >= miss)
       return ";fill:rgb(255,255,255);color:rgb(0,0,0);";
-    if (this.rolls[index].r >= critical)
+    if (this.rolls[index].r <= critical)
       return ";fill:rgb(255,0,0);color:rgb(255,255,255);";
     return ";fill:rgb(81,138,66);color:rgb(255,255,255);";
     //return ";fill:rgb(20,20,20);color:rgb(255,255,255);";

@@ -15,7 +15,7 @@ export class CovertOpsDialogComponent {
   pieceHref(operative: boolean = false) {
     if (!operative)
       return '#' + this.data.token.templateKey.type;
-    return this.data.operative ? '#' + this.data.operative.templateKey.type : "";
+    return this.data.operative ? ('#' + this.data.operative.templateKey.type) + (this.data.operative.team.strength === 0 ? "Dead" : "") : "";
   }
   dieHref(index: number) {
     if (!this.rolls || this.rolls.length <= index)

@@ -46,6 +46,7 @@ export abstract class Piece implements IProjectedEntity, IBindableTarget {
   constructor(private _game: Game, state: string) {
     this._team = this.findTeam();
     this.templateKey = { type: <any>(this.constructor.name) };
+    this.setState(state);
   }
   elementRef: ElementRef<SVGElement> | undefined;
   private lastClientRect: Rectangle2D | undefined;
@@ -103,6 +104,7 @@ export abstract class Piece implements IProjectedEntity, IBindableTarget {
   public isTerrorist(): this is Terrorist {
     return this.type === "Terrorist";
   }
+  abstract setState(state: string): string;
   abstract getState(): string;
   abstract findTeam(): Team;
   abstract readonly type: string;

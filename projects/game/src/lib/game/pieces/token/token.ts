@@ -33,14 +33,13 @@ function deserializeTokenRevealed(revealed: string): TokenRevealed {
 export type TokenChoice = "TRAP" | "RECRUIT" | "BOMB";
 
 export abstract class Token extends Piece {
-  result: TokenResult = "";
-  age: number = 0;
-  revealed: TokenRevealed = "";
+  result!: TokenResult;
+  age!: number;
+  revealed!: TokenRevealed;
   findTeam() {
     return this.game.findTeam(TeamId.Terrorist);
   }
   setState(state: string) {
-    //state=super.setState(state);
     if (state.search(/(\d+)([awl]?)([er]?)/) === 0) {
       this.age = parseInt(RegExp.$1);
       this.result = deserializeTokenResult(RegExp.$2);

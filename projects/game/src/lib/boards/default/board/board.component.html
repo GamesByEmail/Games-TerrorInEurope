@@ -853,9 +853,9 @@
           </g>
           <g *ngIf="game.showTokenSelect(territory)" class="tokenSelect">
             <circle r="35" fill="transparent"/>
-            <use href="#Trap" class="token" transform="scale(0.4) translate(-52,-30)" (click)="territory.click($event,'TRAP')"/>
-            <use href="#Recruit" class="token" transform="scale(0.4) translate(52,-30)" (click)="territory.click($event,'RECRUIT')"/>
-            <use href="#Bomb" class="token" transform="scale(0.4) translate(0,60)" (click)="territory.click($event,'BOMB')"/>
+            <use href="#Trap" class="token" [attr.transform]="'scale(0.4) translate(-52,'+(territory.bombable() ? -30 : 0)+')'" (click)="territory.click($event,'TRAP')"/>
+            <use href="#Recruit" class="token" [attr.transform]="'scale(0.4) translate(52,'+(territory.bombable() ? -30 : 0)+')'" (click)="territory.click($event,'RECRUIT')"/>
+            <use *ngIf="territory.bombable()" href="#Bomb" class="token" transform="scale(0.4) translate(0,60)" (click)="territory.click($event,'BOMB')"/>
           </g>
         </g>
       </g>

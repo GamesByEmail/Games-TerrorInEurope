@@ -95,7 +95,7 @@ export class Territory extends BaseMapTerritory<Game, IGameOptions, IGameState, 
     if (this.pieces.length > 0) {
       state += this.index;
       state += TERRITORY_STATE_DELIMETER;
-      state += this.pieces.map(piece => piece.getState()).join(PIECE_DELIMETER);
+      state += this.pieces.map(piece => piece.getState()).filter(state=>state.length>0).join(PIECE_DELIMETER);
       state += TERRITORY_DELIMETER;
     }
     return state;
@@ -189,6 +189,9 @@ export class Territory extends BaseMapTerritory<Game, IGameOptions, IGameState, 
       if (this.pieces[i].isMeeple() && this.pieces[i].show())
         return true;
     return false;
+  }
+  bombable(){
+    return this.region!=="African" && this.region!=="Turk";
   }
   click(event: MouseEvent, token?: TokenChoice) {
     if (!this.canSelect)

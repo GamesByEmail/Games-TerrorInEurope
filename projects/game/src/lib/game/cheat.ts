@@ -22,4 +22,9 @@ export function operativeDieFill() {
 export function terroristDieFill() {
   return findDieFill('qwerty');
 }
+export function maybeTie(rolls: number[]) {
+  if (findDieFill('`')) {
+    rolls[0] = 5 - rolls[1];
+  }
+}
 
