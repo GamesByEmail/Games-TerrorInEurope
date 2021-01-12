@@ -1,56 +1,96 @@
-<svg viewBox="0 0 420 405" width=420 height=405 xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 420 435" width=420 height=435 xmlns="http://www.w3.org/2000/svg">
   <g svg-dialog-title>
     <text x="210" text-anchor="middle">Combat</text>
   </g>
   <g [style.display]="hideFor(tAttack)">
-    <text x="210" y="50" text-anchor="middle">The {{data.attacker.title}} have discovered the {{defender!.title}} in</text>
-    <text x="210" y="70" text-anchor="middle">{{defender!.territory!.title}} and must combat them.</text>
+    <text x="210" y="50" text-anchor="middle">The {{attacker.meepleTitle}} have discovered the {{eval(defender,'title')}} in</text>
+    <text x="210" y="70" text-anchor="middle">{{attacker.city.title}} and must combat them.</text>
   </g>
   <g [style.display]="showFor(tAttack)">
-    <text x="210" y="50" text-anchor="middle">The Terrorist has attacked Operatives in</text>
-    <text x="210" y="70" text-anchor="middle">{{defender!.territory!.title}} and must combat them.</text>
+    <text x="210" y="50" text-anchor="middle">The {{attacker.meepleTitle}} has attacked Operatives in</text>
+    <text x="210" y="70" text-anchor="middle">{{attacker.city.title}} and must combat them.</text>
   </g>
-  <use x="100" y="115" [attr.href]="meepleHref()" [style]="meepleStyle()"/>
-  <text x="75" y="90"  [style.display]="showFor(data.attacker.team.strength)" class="stengthText">{{data.attacker.team.strength}}</text>
-  <use x="250" y="115" [attr.href]="meepleHref(0)" [style]="meepleStyle(0)"/>
-  <text x="225" y="90" [style.display]="showFor(defenderStrength(0))" class="stengthText">{{defenderStrength(0)}}</text>
-  <use x="385" y="115" [attr.href]="meepleHref(1)" [style]="meepleStyle(1)"/>
-  <text x="360" y="90" [style.display]="showFor(defenderStrength(1))" class="stengthText">{{defenderStrength(1)}}</text>
-  <use x="320" y="115" [attr.href]="meepleHref(2)" [style]="meepleStyle(2)"/>
-  <text x="295" y="90" [style.display]="showFor(defenderStrength(2))" class="stengthText">{{defenderStrength(2)}}</text>
+  <g transform="translate(0 115)">
+    <g transform="translate(100 0)">
+      <g [style]="combatantStyle()">
+        <use [attr.href]="combatantHref()"/>
+        <text x="-15" y="-25"  [style.display]="showFor(combatantStrength())" class="stengthText">{{combatantStrength()}}</text>
+        <text x="15" y="-25" [style.display]="showFor(combatantModifier())" class="modifierText">{{combatantModifier()}}</text>
+      </g>
+    </g>
+    <g transform="translate(190 0)">
+      <g [style]="combatantStyle(0)">
+        <use [attr.href]="combatantHref(0)" (click)="defenderClick(0)"/>
+        <text x="-15" y="-25" [style.display]="showFor(combatantStrength(0))" class="stengthText">{{combatantStrength(0)}}</text>
+        <text x="15" y="-25" [style.display]="showFor(combatantModifier(0))" class="modifierText">{{combatantModifier(0)}}</text>
+      </g>
+    </g>
+    <g transform="translate(255 0)">
+      <g [style]="combatantStyle(1)">
+        <use [attr.href]="combatantHref(1)" (click)="defenderClick(1)"/>
+        <text x="-15" y="-25" [style.display]="showFor(combatantStrength(1))" class="stengthText">{{combatantStrength(1)}}</text>
+        <text x="15" y="-25" [style.display]="showFor(combatantModifier(1))" class="modifierText">{{combatantModifier(1)}}</text>
+      </g>
+    </g>
+    <g transform="translate(320 0)">
+      <g [style]="combatantStyle(2)">
+        <use [attr.href]="combatantHref(2)" (click)="defenderClick(2)"/>
+        <text x="-15" y="-25" [style.display]="showFor(combatantStrength(2))" class="stengthText">{{combatantStrength(2)}}</text>
+        <text x="15" y="-25" [style.display]="showFor(combatantModifier(2))" class="modifierText">{{combatantModifier(2)}}</text>
+      </g>
+    </g>
+  </g>
 
-  <g [style.display]="showFor(!rolls &amp;&amp; !defender)" transform="translate(15 200)">
-    <text>Pick a defender.</text>
+  <g [style.display]="showFor(!rolls &amp;&amp; !defender)" transform="translate(0 190)">
+    <text x="210" text-anchor="middle" class="instruction">Click the Operative above to battle.</text>
+    <text x="15" y="45">The Terrorist must fight each Operative in succession until there</text>
+    <text x="15" y="65">is a Combat Break or until all the Operatives are killed.</text>
   </g>
 
   <g [style.display]="showFor(rolls)" transform="translate(0 185)">
     <g transform="translate(60 0)">
       <use [attr.href]="dieHref('a')" [attr.style]="dieStyle('a')"/>
-      <text x="35" class="modifierText"> + {{rolls &amp;&amp; rolls.a.m}} = {{rolls &amp;&amp; rolls.a.t}}</text>
+      <text x="35" class="equationText"> + {{eval(rolls,'a.m')}} = <tspan class="totalText">{{eval(rolls,'a.t')}}</tspan></text>
     </g>
-    <g [attr.transform]="'translate('+(210+defenderIndexToPlace(0)*35)+' 0)'">
+    <g [attr.transform]="'translate('+(210+defenders.indexOf(defender)*35)+' 0)'">
       <use [attr.href]="dieHref('d')" [attr.style]="dieStyle('d')"/>
-      <text x="35" class="modifierText"> + {{rolls &amp;&amp; rolls.d.m}} = {{rolls &amp;&amp; rolls.d.t}}</text>
+      <text x="35" class="equationText"> + {{eval(rolls,'d.m')}} = <tspan class="totalText">{{eval(rolls,'d.t')}}</tspan></text>
    </g>
+    <g transform="translate(210 50)">
+      <text [style.display]="showFor(rolls,'l.s&gt;0')" class="result" text-anchor="middle">The {{eval(rolls,'l.c.meepleTitle')}} lost <tspan class="equationInline">{{eval(rolls,'l.d')}}</tspan> strength and is now at <tspan class="strengthInline">{{eval(rolls,'l.s')}}</tspan> strength.</text>
+      <text [style.display]="showFor(rolls,'l.s===0')" class="result" text-anchor="middle">The {{eval(rolls,'l.c.meepleTitle')}} lost <tspan class="equationInline">{{eval(rolls,'l.d')}}</tspan> strength and {{wasWere(eval(rolls,'l.c.meepleTitle'))}} killed.</text>
+      <text [style.display]="showFor(combatBreak)" class="result" text-anchor="middle">The modified rolls are equal, no strength was</text>
+      <text y="20" [style.display]="showFor(combatBreak)" class="result" text-anchor="middle">lost by either combatant.</text>
+    </g>
   </g>
 
-  <g [style.display]="showFor(rolls &amp;&amp; rolls.t.d&gt;0)" transform="translate(210 240)">
-    <text [style.display]="showFor(rolls &amp;&amp; rolls.t.s&gt;0)" text-anchor="middle">The Terrorist lost {{rolls &amp;&amp; rolls.t.d}} strength and is now at {{rolls &amp;&amp; rolls.t.s}} strength.</text>
-    <text [style.display]="showFor(rolls &amp;&amp; rolls.t.s===0)" text-anchor="middle">The Terrorist lost {{rolls &amp;&amp; rolls.t.d}} strength and was killed.</text>
-  </g>
-  <g [style.display]="showFor(rolls &amp;&amp; rolls.o.d&gt;0)" transform="translate(210 240)">
-    <text [style.display]="showFor(rolls &amp;&amp; rolls.o.s&gt;0)" text-anchor="middle">The Operative lost {{rolls &amp;&amp; rolls.o.d}} strength and is now at {{rolls &amp;&amp; rolls.o.s}} strength.</text>
-    <text [style.display]="showFor(rolls &amp;&amp; rolls.o.s===0)" text-anchor="middle">The Operative lost {{rolls &amp;&amp; rolls.o.d}} strength and was killed.</text>
+  <g [style.display]="showFor(readyToFight)" transform="translate(15 265)">
+    <text>The {{combatant().meepleTitle}} have strength of <tspan class="strengthInline">{{combatantStrength()}}</tspan> and a modifier of <tspan class="equationInline">+ {{combatantModifier()}}</tspan>.</text>
+    <text y="25">The {{combatant(-1).meepleTitle}} have strength of <tspan class="strengthInline">{{combatantStrength(-1)}}</tspan> and a modifier of <tspan class="equationInline">+ {{combatantModifier(-1)}}</tspan>.</text>
+    <text y="50">Each combatant will roll 1 die. The combatant with the lowest</text>
+    <text y="70">total (roll + modifier) will suffer strength loss equal to the</text>
+    <text y="90">difference between the totals. If the totals are equal, a </text>
+    <text y="110" [style.display]="showFor(tAttack)">Combat Break occurs and {{attacker.meepleTitle}} must move again. </text>
+    <text y="110" [style.display]="hideFor(tAttack)">Combat Break occurs and the {{posessive(attacker.meepleTitle)}} turn is complete. </text>
   </g>
 
-  <g [style.display]="showFor(!rolls &amp;&amp; defender)" transform="translate(15 360)">
-    <text>Push the button, Max.</text>
+  <g [style.display]="showFor(combatBreak)" transform="translate(15 305)">
+    <text>With the totals equal, a Combat Break is in force and the</text>
+    <text y="20" [style.display]="showFor(tAttack)">{{attacker.meepleTitle}} must move to another city.</text>
+    <text y="20" [style.display]="hideFor(tAttack)">{{posessive(attacker.meepleTitle)}} turn is complete.</text>
+  </g>
+
+  <g transform="translate(210 315)">
+    <text [style.display]="showFor(rolls,'t.s===0')" text-anchor="middle">The game is over.</text>
+    <text [style.display]="showFor(!tAttack &amp;&amp; rolls,'o.s===0')" text-anchor="middle">The {{attacker.meepleTitle}} will remain deal until their next turn.</text>
+    <text [style.display]="showFor(tAttack &amp;&amp; rolls,'t.s===0')" text-anchor="middle">The game is over.</text>
   </g>
 
   <g svg-dialog-action>
-    <g svg-dialog-button="flat" width="180" (click)="close()">
-      <text [style.display]="hideFor(rolls)">Roll For Combat</text>
-      <text [style.display]="showFor(rolls)">{{data.attacker.team.strength===0 ? "Done" : "Next"}}</text>
+    <g svg-dialog-button="flat"  [style.display]="showFor(readyToFight || next || done)" width="180" (click)="close()">
+      <text [style.display]="showFor(readyToFight)">Roll For Combat</text>
+      <text [style.display]="showFor(next)">Next</text>
+      <text [style.display]="showFor(done)">Done</text>
     </g>
   </g>
 </svg>

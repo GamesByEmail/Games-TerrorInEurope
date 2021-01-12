@@ -1,20 +1,13 @@
 import { Injectable, ViewContainerRef, ElementRef } from '@angular/core';
 import { SvgDialogService, SvgDialogRef } from '@packageforge/svg-dialog';
-import { Operative } from 'projects/game/src/lib/game/piece';
-import { Terrorist } from 'projects/game/src/lib/game/pieces/meeple/terrorist';
+import { Team } from 'projects/game/src/lib/game/team';
 import { CombatDialogComponent } from './combat-dialog.component';
 
-export type ICombatDialogData = ICombatDialogDataOperativeVersusTerrorist | ICombatDialogDataTerroristVersusOperatives
-
-export interface ICombatDialogDataOperativeVersusTerrorist {
-  attacker: Operative
-  defender: Terrorist
+export interface ICombatDialogData {
+  attacker: Team
+  defenders: Team[]
 }
-export interface ICombatDialogDataTerroristVersusOperatives {
-  attacker: Terrorist
-  defenders: Operative[]
-}
-export type ICombatDialogResult = Operative | Terrorist;
+export type ICombatDialogResult = Team;
 
 
 @Injectable({

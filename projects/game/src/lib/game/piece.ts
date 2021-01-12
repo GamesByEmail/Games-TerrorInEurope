@@ -1,69 +1,42 @@
-import { IProjectedEntity } from '@packageforge/template-projection';
-import { IBindableTarget, StateStore } from '@gamesbyemail/base';
+import { StateStore } from '@gamesbyemail/base';
 import { Game } from './game';
 import { Territory } from './territory';
 import { Team } from './team';
-import { IPieceKey } from './i-piece-key';
-import { ElementRef } from '@angular/core';
-import { Rectangle2D } from '@packageforge/geometry2d';
-import { TokenResult } from './pieces/token/token';
-import { Meeple } from './pieces/meeple/meeple';
-import { SecretAgents } from './pieces/meeple/secret-agents';
-import { BombSquad } from './pieces/meeple/bomb-squad';
-import { SpecialForces } from './pieces/meeple/special-forces';
+import { Meeple, Operative } from './pieces/meeple/meeple';
 import { Terrorist } from './pieces/meeple/terrorist';
-import { Trap } from './pieces/token/trap';
-import { Recruit } from './pieces/token/recruit';
-import { Bomb } from './pieces/token/bomb';
+import { ITokenState } from './team-state';
+import { Token } from './pieces/token/token';
 
 export interface IPieceSave {
   territory: number;
 }
-export type Operative = SecretAgents | BombSquad | SpecialForces;
-export type CovertOpToken = Trap | Recruit | Bomb;
+export abstract class Piece {
 
-export abstract class Piece implements IProjectedEntity, IBindableTarget {
+  abstract readonly type: string;
+  abstract setState(state: ITokenState|Team):void;
+  abstract getState(): ITokenState|undefined;
+  abstract sortOrder(): number;
+  abstract svgId(): string;
+
   public get game(): Game {
     return this._game;
   }
-  private _team: Team;
+  protected _team!: Team;
   public get team(): Team {
     return this._team;
   }
-  private _territory: Territory | undefined;
-  public get territory(): Territory | undefined {
+  private _territory!: Territory;
+  public get territory(): Territory {
     return this._territory;
   }
-  public set territory(value: Territory | undefined) {
-    if (this.elementRef)
-      this.lastClientRect = new Rectangle2D(this.elementRef.nativeElement.getBoundingClientRect());
+  public set territory(value: Territory) {
     this._territory = value;
   }
-  public templateKey: IPieceKey;
   private stateStore = new StateStore<IPieceSave>();
   public showCheck = false;
   public offset = 0;
-  constructor(private _game: Game, state: string) {
-    this._team = this.findTeam();
-    this.templateKey = { type: <any>(this.constructor.name) };
+  constructor(private _game: Game, state: ITokenState|Team) {
     this.setState(state);
-  }
-  elementRef: ElementRef<SVGElement> | undefined;
-  private lastClientRect: Rectangle2D | undefined;
-  bindElement(elementRef: ElementRef<SVGElement>): Rectangle2D | undefined {
-    if (this.elementRef && this.elementRef !== elementRef)
-      this.unbindElement(this.elementRef);
-    this.elementRef = elementRef;
-    const r = this.lastClientRect;
-    this.lastClientRect = undefined;
-    return r;
-  }
-  unbindElement(elementRef: ElementRef<SVGElement>): void {
-    if (this.elementRef === elementRef)
-      this.elementRef = undefined;
-  }
-  getTemplateKey(key?: IPieceKey): IPieceKey {
-    return this.templateKey;
   }
   canMove(): boolean {
     return this.team.myTurn;
@@ -79,24 +52,20 @@ export abstract class Piece implements IProjectedEntity, IBindableTarget {
     };
   }
   restore(depth: number) {
-    const saved = this.stateStore.pop(depth);
+    const saved = this.stateStore.pop(depth)!;
     this.restoring(saved);
   }
-  restoring(saved: IPieceSave | undefined) {
-    this.territory = saved && saved.territory >= 0 ? this.team.game.board.territories[saved.territory] : undefined;
+  restoring(saved: IPieceSave) {
+    this.territory = this.team.game.board.territories[saved.territory];
   }
   commit() {
     this.stateStore.commit();
   }
-  result: TokenResult = "";
-  age: number = 0;
-  abstract show(): boolean;
-  abstract sortOrder(): number;
   public isMeeple(): this is Meeple {
     return this.type === "SecretAgents" || this.type === "BombSquad" || this.type === "SpecialForces" || this.type === "Terrorist";
   }
-  public isToken(): boolean {
-    return this.type === "Trap" || this.type === "Recruit" || this.type === "Bomb" || this.type === "None";
+  public isToken(): this is Token {
+    return this.type === "Trap" || this.type === "Recruit" || this.type === "Bomb" || this.type === "None" || this.type === "Unknown";
   }
   public isOperative(): this is Operative {
     return this.type === "SecretAgents" || this.type === "BombSquad" || this.type === "SpecialForces";
@@ -104,10 +73,6 @@ export abstract class Piece implements IProjectedEntity, IBindableTarget {
   public isTerrorist(): this is Terrorist {
     return this.type === "Terrorist";
   }
-  abstract setState(state: string): string;
-  abstract getState(): string;
-  abstract findTeam(): Team;
-  abstract readonly type: string;
   makeMove(toTerritory: Territory, logIt?: boolean): boolean {
     this.changeTerritory(toTerritory);
     return true;
@@ -118,10 +83,10 @@ export abstract class Piece implements IProjectedEntity, IBindableTarget {
   isOurTurn() {
     return this.team.myTurn;
   }
-  async attemptMove(toTerritory: Territory | undefined) {
+  async attemptMove(toTerritory: Territory) {
     return true;
   }
-  changeTerritory(toTerritory: Territory | undefined): void {
+  changeTerritory(toTerritory: Territory): void {
     if (this.territory)
       this.territory.removePiece(this);
     this.territory = toTerritory;
@@ -130,12 +95,6 @@ export abstract class Piece implements IProjectedEntity, IBindableTarget {
   }
   isUs(team?: Team): boolean {
     return team ? this.team === team : this.team.isUs();
-  }
-  replaceWith(replacement: Piece) {
-    const territory = this.territory;
-    this.changeTerritory(undefined);
-    replacement.changeTerritory(territory);
-    replacement.lastClientRect = this.lastClientRect;
   }
   beginningMove() {
   }

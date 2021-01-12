@@ -1,12 +1,12 @@
 import { Injectable, ViewContainerRef, ElementRef } from '@angular/core';
 import { SvgDialogService, SvgDialogRef } from '@packageforge/svg-dialog';
-import { Operative } from 'projects/game/src/lib/game/piece';
-import { Token } from 'projects/game/src/lib/game/pieces/token/token';
+import { CovertOpToken } from 'projects/game/src/lib/game/pieces/token/token';
+import { Team } from 'projects/game/src/lib/game/team';
 import { CovertOpsDialogComponent } from './covert-ops-dialog.component';
 
 export interface ICovertOpsDialogData {
-  operative?: Operative
-  token: Token
+  operative?: Team
+  token: CovertOpToken
 }
 export type ICovertOpsDialogResult = undefined;
 

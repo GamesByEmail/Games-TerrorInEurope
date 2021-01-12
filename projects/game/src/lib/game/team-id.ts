@@ -15,10 +15,3 @@ export function isOperative(teamId: TeamId) {
 export function isTerrorist(teamId: TeamId) {
   return teamId === TeamId.Terrorist;
 }
-const teamIds = [
-  TeamId.SecretAgents,
-  TeamId.BombSquad,
-  TeamId.SpecialForces,
-  TeamId.InformantNetwork,
-  TeamId.Terrorist
-];

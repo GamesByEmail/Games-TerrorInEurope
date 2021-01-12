@@ -1,36 +1,29 @@
+import { BehaviorSubject } from 'rxjs';
+import { filter, take } from 'rxjs/operators';
 import { BaseGame, IBaseGameSave, IBaseGameState } from '@gamesbyemail/base';
 import { Board, IBoardSave } from './board';
 import { Team, ITeamSave } from './team';
 import { Territory, ITerritorySave } from './territory';
 import { isOperative, isTerrorist, TeamId } from './team-id';
 import { Move, IModMove } from './move';
-import { Token, TokenChoice } from './pieces/token/token';
-import { SecretAgents } from './pieces/meeple/secret-agents';
-import { BombSquad } from './pieces/meeple/bomb-squad';
-import { SpecialForces } from './pieces/meeple/special-forces';
-import { Terrorist } from './pieces/meeple/terrorist';
-import { Trap } from './pieces/token/trap';
-import { Recruit } from './pieces/token/recruit';
-import { Bomb } from './pieces/token/bomb';
-import { None } from './pieces/token/none';
-import { BehaviorSubject } from 'rxjs';
-import { filter, take } from 'rxjs/operators';
-import { Meeple } from './pieces/meeple/meeple';
-import { CovertOpToken, Operative } from './piece';
+import { CovertOpToken, Token } from './pieces/token/token';
+import { ServerService } from 'projects/server/src/public-api';
+import { ETokenType, IInfoState, IOpsState, ITeamState, ITerrState } from './team-state';
+import { createToken } from './pieces/token/create-token';
 
 export interface IGameOptions {
   dark?: boolean;
 }
-export interface IGameState extends IBaseGameState<Game, IGameOptions, IGameState, IGameSave, Board, IBoardSave, Territory, ITerritorySave, Team, TeamId, ITeamSave, Move, IModMove> {
-  board: string;
-  teams: string[];
+
+export interface IGameState extends IBaseGameState<Game, IGameOptions, IGameState, IGameSave, Board, undefined, IBoardSave, Territory, undefined, ITerritorySave, Team, TeamId, ITeamState, ITeamSave, Move, IModMove> {
+  teams: [IOpsState, IOpsState, IOpsState, IInfoState, ITerrState];
   moves: Move[];
 }
 
-export interface IGameSave extends IBaseGameSave<Game, IGameOptions, IGameState, IGameSave, Board, IBoardSave, Territory, ITerritorySave, Team, TeamId, ITeamSave, Move, IModMove> {
+export interface IGameSave extends IBaseGameSave<Game, IGameOptions, IGameState, IGameSave, Board, undefined, IBoardSave, Territory, undefined, ITerritorySave, Team, TeamId, ITeamState, ITeamSave, Move, IModMove> {
   header: string;
 }
-export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Board, IBoardSave, Territory, ITerritorySave, Team, TeamId, ITeamSave, Move, IModMove> {
+export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Board, undefined, IBoardSave, Territory, undefined, ITerritorySave, Team, TeamId, ITeamState, ITeamSave, Move, IModMove> {
   constructor() {
     super();
     this._board = new Board(this);
@@ -44,83 +37,84 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
     this.modalOpen
       .pipe(filter(open => !open), take(1))
       .subscribe(o => {
+        this._moveNumber = -1;
+        this.board.clear();
         super.setState(state);
-        this.board.checkPieces();
         this.header = "";
         const turnTeam = this.findTurnTeam();
         if (turnTeam && turnTeam.isUs()) {
-          const meeple = turnTeam.findMeeple();
-          if (meeple)
-            if (meeple.isOperative())
-              if (turnTeam.strength === 0)
-                this.beginMeepleMove(meeple);
-              else {
-                const token = meeple.territory!.findToken<CovertOpToken>(undefined, undefined, false);
-                if (token)
-                  this.resolveCovertOps(turnTeam, meeple, token);
-                else {
-                  const terrorist = meeple.territory!.findTerrorist();
-                  if (turnTeam.hasRolls())
-                    if (terrorist && terrorist.team.hasRolls())
-                      this.resolveCombat(meeple, terrorist);
-                    else
-                      this.resolveCovertOps(turnTeam, meeple, meeple.territory!.findToken<CovertOpToken>()!);
-                  else
-                    if (terrorist)
-                      this.resolveCombat(meeple, terrorist);
-                    else
-                      this.beginMeepleMove(meeple);
-                }
-              }
-            else {
-              const operatives = meeple.territory!.findOperatives(true);
-              if (operatives.length > 0) {
-
-              } else
-                this.beginMeepleMove(meeple);
-            }
+          if (turnTeam.isInformantNetwork())
+            this.informantTurn(turnTeam);
           else
-            this.beginMeepleMove(meeple);
+            if (turnTeam.city)
+              if (turnTeam.isOperative())
+                if (turnTeam.isDead())
+                  this.beginMeepleMove(turnTeam);
+                else {
+                  const token = turnTeam.city.findToken<CovertOpToken>(undefined, undefined, false);
+                  if (token)
+                    this.resolveCovertOps(turnTeam, token);
+                  else {
+                    const terrorist = turnTeam.city.findTerrorist();
+                    if (turnTeam.hasRolls())
+                      if (terrorist && terrorist.hasRolls())
+                        this.resolveCombat(turnTeam, [terrorist]);
+                      else
+                        this.resolveCovertOps(turnTeam, turnTeam.city.findToken<CovertOpToken>()!);
+                    else
+                      if (terrorist)
+                        this.resolveCombat(turnTeam, [terrorist]);
+                      else
+                        this.beginMeepleMove(turnTeam);
+                  }
+                }
+              else {
+                const operatives = turnTeam.city.findOperatives();
+                if (operatives.filter(o => o.isAlive()).length > 0)
+                  this.resolveCombat(turnTeam, operatives);
+                else
+                  this.beginMeepleMove(turnTeam);
+              }
+            else
+              this.beginMeepleMove(turnTeam);
         }
       });
   }
-  resolveCovertOps(turnTeam: Team, meeple: Operative, token: CovertOpToken) {
+  resolveCovertOps(turnTeam: Team, token: CovertOpToken) {
     this.modalOpen.next(true);
-    this.board.openCovertOps(meeple, token, () => meeple.territory!.mapData.location)
+    this.board.openCovertOps(turnTeam, token, () => turnTeam.city.mapData.location)
       .subscribe(() => {
         this.modalOpen.next(false);
         this.clearRolls();
-        const terrorist = meeple.territory!.findTerrorist();
+        const terrorist = turnTeam.city.findTerrorist();
         if (!token.result) {
-          meeple.workToken(token);
-          if (!terrorist || turnTeam.strength === 0) {
-            this.board.game.incrementTurn();
+          turnTeam.workToken(token);
+          if (!terrorist || turnTeam.isDead()) {
+            this.incrementTurn();
             this.modalOpen.next(true);
-            this.board.openCovertOps(meeple, token, () => meeple.territory!.mapData.location)
+            this.board.openCovertOps(turnTeam, token, () => turnTeam.city.mapData.location)
               .subscribe(() => this.modalOpen.next(false));
           }
-          this.saveIt();
+          this.saveIt(turnTeam);
         } else {
-          this.resolveCombat(meeple, terrorist!);
+          this.resolveCombat(turnTeam, [terrorist!]);
         }
       });
   }
-  resolveCombat(attacker: Operative, defenders: Terrorist): void
-  resolveCombat(attacker: Terrorist, defender: Operative[]): void
-  resolveCombat(attacker: Operative | Terrorist, defender: Operative[] | Terrorist) {
+  resolveCombat(attacker: Team, defenders: Team[]) {
     this.modalOpen.next(true);
-    this.board.openCombat(attacker as Operative, defender as Terrorist, () => attacker.territory!.mapData.location)
+    this.board.openCombat(attacker, defenders, () => attacker.city.mapData.location)
       .subscribe(opponent => {
         this.modalOpen.next(false);
         this.clearRolls();
         if (opponent) {
-          if (attacker.team.combat(opponent.team, attacker.territory!)) {
-            this.board.game.incrementTurn();
+          if (attacker.combat(opponent, attacker.city)) {
+            this.incrementTurn();
             this.modalOpen.next(true);
-            this.board.openCombat(attacker as Operative, defender as Terrorist, () => attacker.territory!.mapData.location)
+            this.board.openCombat(attacker, defenders, () => attacker.city.mapData.location)
               .subscribe(() => this.modalOpen.next(false));
           }
-          this.saveIt();
+          this.saveIt(opponent);
         } else
           this.beginMeepleMove(attacker);
       });
@@ -128,10 +122,26 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   clearRolls() {
     this.teams.forEach(t => t.clearRolls());
   }
-  beginMeepleMove(meeple?: Meeple) {
-    this.teams.forEach(t => t.clearRolls());
-    const availableMoves = meeple ? meeple.availableMoves() : this.board.territories;
+  beginMeepleMove(team: Team) {
+    this.clearRolls();
+    const availableMoves = team.city ? team.availableMoves() : this.board.territories;
     availableMoves.forEach(c => c.canSelect = true);
+  }
+  informantTurn(informant: Team) {
+    if (informant.agedMoveNumber === this.moveNumber) {
+      // Age tokens
+      const tokens = this.getAllTokens();
+      tokens.forEach(token => {
+        if (token.hasExpired() && !token.result)
+          token.aged();
+      });
+      informant.agedMoveNumber = this.moveNumber;
+      this.incrementTurn();
+      this.saveIt(informant);
+      return;
+    }
+    this.incrementTurn();
+    this.saveIt(informant);
   }
   saving(): IGameSave {
     const saved = super.saving();
@@ -148,89 +158,47 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   }
   showTokenSelect(territory: Territory) {
     const team = this.findTurnTeam();
-    return territory.canSelect && team && team.isUs && team.id === TeamId.Terrorist && !territory.hasOperative();
+    return territory.canSelect && team && team.isUs && team.isTerrorist() && !territory.hasOperative();
   }
   clearModal(event: MouseEvent) {
     this.board.territories.forEach(c => c.showTokenSelect = false);
   }
-  moveHere(territory: Territory, tokenChoice?: TokenChoice) {
-    const turnTeam = this.board.game.findTurnTeam()!;
-    if (turnTeam.id === TeamId.Terrorist) {
-      let token: Token;
-      switch (tokenChoice) {
-        case "TRAP":
-          token = (new Trap(this.board.game, ""));
-          break;
-        case "RECRUIT":
-          token = (new Recruit(this.board.game, ""));
-          break;
-        case "BOMB":
-          token = (new Bomb(this.board.game, ""));
-          break;
-        default:
-          token = (new None(this.board.game, ""));
-          break;
-      }
-      token.changeTerritory(territory);
+  moveHere(city: Territory, tokenType?: ETokenType) {
+    const turnTeam = this.findTurnTeam()!;
+    if (turnTeam.isTerrorist() && tokenType) {
+      const token = createToken(this.board.game, tokenType);
+      token.changeTerritory(city);
     }
-    let meeple = turnTeam.findMeeple();
-    if (!meeple)
-      switch (turnTeam.id) {
-        case TeamId.SecretAgents:
-          meeple = (new SecretAgents(this.board.game, ""));
-          break;
-        case TeamId.BombSquad:
-          meeple = (new BombSquad(this.board.game, ""));
-          break;
-        case TeamId.SpecialForces:
-          meeple = (new SpecialForces(this.board.game, ""));
-          break;
-        case TeamId.Terrorist:
-          meeple = (new Terrorist(this.board.game, ""));
-          break;
-      }
-    meeple = meeple!;
-    if (meeple.isOperative()) {
-      if (territory === meeple.territory)
-        if (meeple.team.strength === 0 && meeple.territory.hasTerrorist())
-          meeple.territory.findToken()!.revealed = "EXISTANCE";
-        else
-          meeple.team.setStrength(100);
-      else
-        meeple.changeTerritory(territory);
-      if (meeple.team.strength === 0 || !territory.findToken<CovertOpToken>(undefined, undefined, false))
-        this.board.game.incrementTurn();
-    } else {
-      meeple.changeTerritory(territory);
-      if (!territory.hasOperative(true))
-        this.board.game.incrementTurn();
-    }
-    this.saveIt();
+    turnTeam.city = city;
+    if (turnTeam.isOperative() || (turnTeam.isTerrorist() && !city.hasOperative(true)))
+      this.incrementTurn();
+    this.saveIt(turnTeam);
   }
-  ageAllTokens() {
+  getAllTokens() {
+    const tokens: Token[] = [];
     this.board.territories.forEach(c => {
       c.pieces.forEach(p => {
         if (p instanceof Token)
-          p.incrementAge();
+          tokens.push(p);
       });
     });
+    return tokens;
+  }
+  doneSettingUp() {
+    return this.moveNumber > 3;
   }
   public incrementTurn() {
     const turnTeam = this.findTurnTeam()!;
     let nextTeam = turnTeam.getNext()!;
-    if (nextTeam.id === TeamId.InformantNetwork && !this.board.findMeeple(TeamId.Terrorist))
-      nextTeam = nextTeam.getNext()!;
-    if (nextTeam.id === TeamId.InformantNetwork)
+    if (nextTeam.isInformantNetwork() && !this.doneSettingUp())
       nextTeam = nextTeam.getNext()!;
     turnTeam.myTurn = false;
     nextTeam.myTurn = true;
-    if (nextTeam.isTerrorist())
-      this.ageAllTokens();
   }
-  saveIt() {
-    const state = this.commit();
-    navigator.clipboard.writeText("return this.game.setState("+JSON.stringify(state, null, 2) + ");\n");
-    this.setState(state);
+  server = new ServerService(this)
+  saveIt(team: Team) {
+    this.server.setState(this.commit(), team);
+    this.setState(this.server.getState());
   }
 
   earnedRankPoints(teamId: TeamId | Team) {
@@ -244,6 +212,13 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
     if (isTerrorist(teamId))
       return terroristPoints[Math.max(viktoryPoints, terroristPoints.length - 1)];
     return 0;
+  }
+
+  getTerrorist() {
+    return this.teams.find(team => team.isTerrorist())!;
+  }
+  getOperatives() {
+    return this.teams.filter(team => team.isOperative());
   }
 
 }

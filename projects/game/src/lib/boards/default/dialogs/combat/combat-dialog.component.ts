@@ -1,12 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { SvgDialogRef, SVG_DIALOG_DATA } from '@packageforge/svg-dialog';
-import { Operative } from 'projects/game/src/lib/game/piece';
-import { Terrorist } from 'projects/game/src/lib/game/pieces/meeple/terrorist';
-import { ICombatDialogData, ICombatDialogDataOperativeVersusTerrorist, ICombatDialogResult } from './combat-dialog.service';
-
-function isICombatDialogDataOperativeVersusTerrorist(data: ICombatDialogData): data is ICombatDialogDataOperativeVersusTerrorist {
-  return (<any>data).defender;
-}
+import { Team } from 'projects/game/src/lib/game/team';
+import { ICombatDialogData, ICombatDialogResult } from './combat-dialog.service';
 
 interface IRollStat {
   r: number
@@ -14,6 +9,7 @@ interface IRollStat {
   t: number
   d: number
   s: number
+  c: Team
 }
 
 @Component({
@@ -22,45 +18,50 @@ interface IRollStat {
   styleUrls: ['./combat-dialog.component.css']
 })
 export class CombatDialogComponent {
-  rolls?: { a: IRollStat, d: IRollStat, t: IRollStat, o: IRollStat }
-  defender?: Operative | Terrorist
+  dialogSize = {
+    width: 420,
+    height: 435
+  };
+  rolls?: { a: IRollStat, d: IRollStat, l?: IRollStat, t?: IRollStat, o?: IRollStat }
+  attacker: Team
+  defender?: Team
+  defenders: [(Team | undefined), (Team | undefined), Team];
   tAttack: boolean
+  combatBreak: boolean
+  anotherToCombat: boolean
+  readyToFight: boolean
+  next: boolean
+  done: boolean
+  chooseDefender: boolean
   constructor(public dialogRef: SvgDialogRef<ICombatDialogResult | undefined>, @Inject(SVG_DIALOG_DATA) public data: ICombatDialogData) {
-    const aRolls = this.data.attacker.team.getRolls();
-    if (isICombatDialogDataOperativeVersusTerrorist(this.data)) {
-      this.tAttack = false;
-      this.defender = this.data.defender;
-    } else {
-      this.tAttack = true;
-      if (aRolls)
-        this.defender = this.data.attacker.team.getDefender(this.data.defenders);
-      this.data.defenders = this.data.defenders.slice().sort((a, b) => {
-        if (a === this.defender)
-          return -1;
-        if (b === this.defender)
-          return 1;
-        return a.team.strength - b.team.strength;
-      });
-    }
+    this.attacker = this.data.attacker;
+    this.defenders=<any>this.data.defenders.slice()
+    while (this.defenders.length < 3)
+      this.defenders.unshift(undefined);
+    this.tAttack=this.attacker.isTerrorist();
+    const aRolls = this.attacker.getRolls();
+    if (this.tAttack && aRolls)
+      this.defender = this.attacker.getDefender(this.defenders);
+    this.sortDefenders();
     if (aRolls && this.defender) {
-      const dRolls = this.defender.team.getRolls()!.slice(0, 2);
+      const dRolls = this.defender.getRolls()!.slice(0, 2);
       this.rolls = {
         a: {
           r: aRolls[0],
           m: aRolls[1],
           t: aRolls[0] + aRolls[1],
           d: Math.max(0, (dRolls[0] + dRolls[1]) - (aRolls[0] + aRolls[1])),
-          s: this.data.attacker.team.strength
+          s: this.attacker.strength,
+          c: this.attacker
         },
         d: {
           r: dRolls[0],
           m: dRolls[1],
           t: dRolls[0] + dRolls[1],
           d: Math.max(0, (aRolls[0] + aRolls[1]) - (dRolls[0] + dRolls[1])),
-          s: this.defender.team.strength
-        },
-        t: <any>undefined,
-        o: <any>undefined
+          s: this.defender.strength,
+          c: this.defender
+        }
       };
       if (this.tAttack) {
         this.rolls.t = this.rolls.a;
@@ -69,38 +70,79 @@ export class CombatDialogComponent {
         this.rolls.o = this.rolls.a;
         this.rolls.t = this.rolls.d;
       }
+      if (this.rolls.a.d > 0)
+        this.rolls.l = this.rolls.a;
+      else if (this.rolls.d.d > 0)
+        this.rolls.l = this.rolls.d;
     }
+    this.combatBreak = this.rolls !== undefined && this.rolls.a.t === this.rolls.d.t;
+    this.anotherToCombat = this.tAttack && !this.combatBreak && this.defender !== undefined && this.rolls !== undefined && this.rolls.d.s === 0 && this.defenders.find(d => d && d != this.defender && d.isAlive()) !== undefined;
+    this.readyToFight = this.defender !== undefined && !this.combatBreak && this.defender.isAlive() && this.attacker.isAlive();
+    this.done = !this.attacker.myTurn;
+    this.chooseDefender=!this.defender || (this.defender.isDead() && this.getLiveDefenders().length>0);
+    this.next = !this.readyToFight && !this.done && this.rolls!==undefined;
   }
-  defenderIndexToPlace(defenderIndex: number) {
-    if (isICombatDialogDataOperativeVersusTerrorist(this.data))
-      return 2;
-    return defenderIndex + (3 - this.data.defenders.length);
+  getLiveDefenders(includingCurrent:boolean=true){
+    if (!this.defender)
+      includingCurrent=true;
+    return this.defenders.filter(d => d && d.isAlive() && (includingCurrent || d!==this.defender));
   }
-  defenderFromPlace(defenderPlace: number) {
-    if (isICombatDialogDataOperativeVersusTerrorist(this.data))
-      return defenderPlace === 2 ? this.data.defender : undefined;
-    const defenderIndex = defenderPlace - (3 - this.data.defenders.length);
-    if (defenderIndex < 0 && defenderIndex >= this.data.defenders.length)
+  sortDefenders() {
+    this.defenders.sort((a, b) => {
+      if (!a || a === this.defender)
+        return -1;
+      if (!b || b === this.defender)
+        return 1;
+      return a.strength - b.strength;
+    });
+    const liveDefenders=this.getLiveDefenders(false);
+    if (!this.defender && liveDefenders.length === 1)
+      this.defender = liveDefenders[0];
+  }
+  combatant(): Team
+  combatant(defenderIndex: -1): Team
+  combatant(defenderIndex?: number): Team | undefined
+  combatant(defenderIndex?: number) {
+    if (typeof (defenderIndex) !== "number")
+      return this.attacker;
+    if (defenderIndex >= 0)
+      return this.defenders[defenderIndex];
+    return this.defenders.find(d => d)!;
+  }
+  combatantStrength(defenderIndex?: number) {
+    const combatant = this.combatant(defenderIndex);
+    if (!combatant || combatant.isDead())
       return undefined;
-    return this.data.defenders[defenderIndex];
+    return combatant.strength.toString();
   }
-  defenderStrength(defenderPlace?: number) {
-    const meep=typeof (defenderPlace) === "number" ? this.defenderFromPlace(defenderPlace) : this.data.attacker;
-    return meep ? meep.team.strength : undefined;
+  combatantModifier(defenderIndex?: number) {
+    const combatant = this.combatant(defenderIndex);
+    if (!combatant || combatant.isDead())
+      return undefined;
+    const asAttacker = typeof (defenderIndex) !== "number";
+    const opponent = asAttacker ? this.defenders.find(d => d)! : this.attacker;
+    return combatant.getCombatModifier(opponent, combatant.city, asAttacker).toString();
   }
-  meepleHref(defenderPlace?: number) {
-    const meep=typeof (defenderPlace) === "number" ? this.defenderFromPlace(defenderPlace) : this.data.attacker;
-    return meep ? "#" + meep.templateKey.type + (meep.team.strength === 0 ? "Dead" : "") : "";
+  combatantHref(defenderIndex?: number) {
+    const combatant = this.combatant(defenderIndex);
+    if (!combatant)
+      return "";
+    return combatant.meepleId;
   }
-  meepleStyle(defenderPlace?: number) {
-    if (typeof (defenderPlace) === "number")
-      if (isICombatDialogDataOperativeVersusTerrorist(this.data))
-        return "";
-      else {
-        const defenderIndex = defenderPlace - (3 - this.data.defenders.length);
-        return !this.defender || defenderIndex === 0 ? '' : "opacity:0.7";
-      }
-    return "";
+  combatantStyle(defenderIndex?: number) {
+    const combatant = this.combatant(defenderIndex);
+    if (!combatant || combatant === this.attacker)
+      return "";
+    let style = "";
+    if (!this.rolls && combatant.isAlive() && combatant !== this.defender)
+      style += "cursor:pointer;";
+    const offset = combatant === this.defender ? -15 : 0;
+    style += "transform:";
+    style += "translate(" + ((2 - defenderIndex!) * 20 + offset) + "px, 0) ";
+    if (combatant !== this.defender)
+      style += "scale(0.7) ";
+    style += ";";
+    return style;
   }
   dieHref(index: 'a' | 'd') {
     if (!this.rolls)
@@ -111,7 +153,7 @@ export class CombatDialogComponent {
     if (!this.rolls)
       return "";
     const o = index === 'a' ? 'd' : 'a';
-    const strength = index === 'a' ? this.rolls.a.s+this.rolls.a.d : this.rolls.d.s+this.rolls.d.d;
+    const strength = index === 'a' ? this.rolls.a.s + this.rolls.a.d : this.rolls.d.s + this.rolls.d.d;
     const miss = this.rolls[o].t - this.rolls[index].m;
     const critical = miss - strength;
     if (this.rolls[index].r >= miss)
@@ -119,24 +161,42 @@ export class CombatDialogComponent {
     if (this.rolls[index].r <= critical)
       return ";fill:rgb(255,0,0);color:rgb(255,255,255);";
     return ";fill:rgb(81,138,66);color:rgb(255,255,255);";
-    //return ";fill:rgb(20,20,20);color:rgb(255,255,255);";
+  }
+  defenderClick(defenderIndex: number) {
+    const combatant = this.combatant(defenderIndex);
+    if (combatant && !this.combatBreak && !this.rolls && combatant.isAlive()) {
+      this.defender = combatant;
+      this.sortDefenders();
+      this.readyToFight = true;
+    }
   }
   close() {
     this.dialogRef.close(this.defender);
   }
-  dialogSize = {
-    width: 420,
-    height: 405
-  };
-  showFor(value: any) {
-    return value ? '' : 'none';
+  eval(value: any, props?: string) {
+    if (props)
+      try {
+        eval("value=value." + props);
+      } catch (e) {
+        value = "";
+      }
+    return value;
   }
-  hideFor(value: any) {
-    return value ? 'none' : '';
+  showFor(value: any, props?: string) {
+    return this.eval(value, props) ? '' : 'none';
+  }
+  hideFor(value: any, props?: string) {
+    return this.eval(value, props) ? 'none' : '';
   }
   viktoryPoints(count?: number) {
     if (typeof (count) === "number")
       return count + " VIKTORY " + (count === 1 ? "point" : "points");
     return "VIKTORY point";
+  }
+  posessive(value: string) {
+    return value + (value.endsWith("s") ? "'" : "'s");
+  }
+  wasWere(value: string) {
+    return value.endsWith("s") ? "were" : "was";
   }
 }

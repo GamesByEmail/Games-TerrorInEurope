@@ -4,24 +4,22 @@ import { Team, ITeamSave } from './team';
 import { Territory, ITerritorySave, ITerritoryData } from './territory';
 import { TeamId } from './team-id';
 import { Move, IModMove } from './move';
-import { CovertOpToken, Operative, Piece } from './piece';
-import { createPiece } from './create-piece';
 import { boardData } from './board-data';
 import { Meeple } from './pieces/meeple/meeple';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { filter, mergeMap } from 'rxjs/operators';
 import { IMapPoint } from '../boards/default/board/city-map-data';
-import { Terrorist } from './pieces/meeple/terrorist';
 import { ICovertOpsDialogResult } from '../boards/default/dialogs/covert-ops/covert-ops-dialog.service';
 import { ICombatDialogResult } from '../boards/default/dialogs/combat/combat-dialog.service';
+import { CovertOpToken } from './pieces/token/token';
+import { ITeamState } from './team-state';
 
-export interface IBoardSave extends IBaseBoardSave<Game, IGameOptions, IGameState, IGameSave, Board, IBoardSave, Territory, ITerritorySave, Team, TeamId, ITeamSave, Move, IModMove> {
+export interface IBoardSave extends IBaseBoardSave<Game, IGameOptions, IGameState, IGameSave, Board, undefined, IBoardSave, Territory, undefined, ITerritorySave, Team, TeamId, ITeamState, ITeamSave, Move, IModMove> {
 }
 
 export interface IBoardController {
-  openCovertOps(operative: Operative | undefined, token: CovertOpToken, pointFnc: () => IMapPoint): Observable<ICovertOpsDialogResult | undefined>
-  openCombat(attacker: Operative, defender: Terrorist, pointFnc: () => IMapPoint): Observable<ICombatDialogResult | undefined>
-  openCombat(attacker: Terrorist, defenders: Operative[], pointFnc: () => IMapPoint): Observable<ICombatDialogResult | undefined>
+  openCovertOps(operative: Team | undefined, token: CovertOpToken, pointFnc: () => IMapPoint): Observable<ICovertOpsDialogResult | undefined>
+  openCombat(attacker: Team, defenders: Team[], pointFnc: () => IMapPoint): Observable<ICombatDialogResult | undefined>
 }
 
 export class Board extends BaseMapBoard<
@@ -30,12 +28,15 @@ export class Board extends BaseMapBoard<
   IGameState,
   IGameSave,
   Board,
+  undefined,
   IBoardSave,
   Territory,
   ITerritoryData,
+  undefined,
   ITerritorySave,
   Team,
   TeamId,
+  ITeamState,
   ITeamSave,
   Move,
   IModMove>  {
@@ -48,11 +49,17 @@ export class Board extends BaseMapBoard<
   constructor(game: Game) {
     super(game, boardData);
   }
+  setState(state:undefined){
+    this.clearFlags();
+  }
+  getState(){
+    return undefined;
+  }
   createTerritory(index: number, data: ITerritoryData): Territory {
     return new Territory(this, index, data);
   }
-  createPiece(state: string): Piece {
-    return createPiece(this.game, state);
+  clear() {
+    this.territories.forEach(t => t.clear());
   }
   checkPieces() {
     this.territories.forEach(t => t.checkPieces());
@@ -70,15 +77,13 @@ export class Board extends BaseMapBoard<
     return;
   }
 
-  openCovertOps(operative: Operative, token: CovertOpToken, pointFnc: () => IMapPoint) {
+  openCovertOps(operative: Team, token: CovertOpToken, pointFnc: () => IMapPoint) {
     return this.controller
       .pipe(mergeMap(c => c.openCovertOps(operative, token, pointFnc)));
   }
 
-  openCombat(attacker: Operative, defender: Terrorist, pointFnc: () => IMapPoint): Observable<ICombatDialogResult | undefined>
-  openCombat(attacker: Terrorist, defenders: Operative[], pointFnc: () => IMapPoint): Observable<ICombatDialogResult | undefined>
-  openCombat(attacker: Operative | Terrorist, defender: Terrorist | Operative[], pointFnc: () => IMapPoint) {
+  openCombat(attacker: Team, defenders: Team[], pointFnc: () => IMapPoint) {
     return this.controller
-      .pipe(mergeMap(c => c.openCombat(<Operative>attacker, <Terrorist>defender, pointFnc)));
+      .pipe(mergeMap(c => c.openCombat(attacker, defenders, pointFnc)));
   }
 }

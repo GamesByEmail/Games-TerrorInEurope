@@ -4,42 +4,42 @@
   </g>
   <g [style.display]="showFor(data.operative)">
     <text x="210" y="50" text-anchor="middle">The Operative has discovered a {{data.token.title.toLowerCase()}} in</text>
-    <text x="210" y="70" text-anchor="middle">{{data.token.territory!.title}} and must attempt to defeat it.</text>
+    <text x="210" y="70" text-anchor="middle">{{data.token.territory.title}} and must attempt to defeat it.</text>
     <use x="160" y="130" [attr.href]="pieceHref(true)"/>
     <use x="270" y="130" [attr.href]="pieceHref()" stroke="rgb(0,0,0)"/>
   </g>
   <g [style.display]="hideFor(data.operative)">
     <text x="210" y="50" text-anchor="middle">A {{data.token.title.toLowerCase()}} placed in</text>
-    <text x="210" y="70" text-anchor="middle">{{data.token.territory!.title}} has succeeded.</text>
+    <text x="210" y="70" text-anchor="middle">{{data.token.territory.title}} has succeeded.</text>
     <use y="130" [attr.href]="pieceHref()" stroke="rgb(0,0,0)"/>
   </g>
   <g [style.display]="hideFor(rolls || !data.operative)" transform="translate(15 200)">
     <g [style.display]="showFor('Trap')" transform="translate(0,10)">
       <text [style.display]="showFor('SecretAgents')" >&#8226; Secret Agents throw two dice against traps and discard</text>
       <text [style.display]="showFor('SecretAgents')" x="10" y="20">the higher roll.</text>
-      <text [style.display]="hideFor('SecretAgents')" y="20">&#8226; {{data.operative &amp;&amp; data.operative.title}} throw one die against traps.</text>
+      <text [style.display]="hideFor('SecretAgents')" y="20">&#8226; {{data.operative &amp;&amp; data.operative.meepleTitle}} throw one die against traps.</text>
       <text y="45">&#8226; The Operative's strength will go down by the amount rolled.</text>
-      <text y="70">&#8226; The Operative currently has a strength of {{data.operative &amp;&amp; data.operative.team.strength}}.</text>
+      <text y="70">&#8226; The Operative currently has a strength of {{data.operative &amp;&amp; data.operative.strength}}.</text>
       <text y="95">&#8226; If the Operative's strength goes to zero they will be dead until</text>
       <text x="10" y="115">their next turn and the Terrorist will receive {{viktoryPoints(3)}}.</text>
     </g>
     <g [style.display]="showFor('Recruit')">
       <text [style.display]="showFor('SpecialForces')" >&#8226; Special Forces throw two dice against recruiting cells and</text>
       <text [style.display]="showFor('SpecialForces')" x="10" y="20">discard the higher roll.</text>
-      <text [style.display]="hideFor('SpecialForces')" y="20">&#8226; {{data.operative &amp;&amp; data.operative.title}} throw one die against recruiting cells.</text>
+      <text [style.display]="hideFor('SpecialForces')" y="20">&#8226; {{data.operative &amp;&amp; data.operative.meepleTitle}} throw one die against recruiting cells.</text>
       <text y="45">&#8226; This recruiting cell will be destroyed on a roll of 1-3.</text>
       <text y="70">&#8226; This recruiting cell will be activated on a roll of 4-6 and the</text>
-      <text x="10" y="90">Terrorist will receive {{data.token.territory!.recruitStrengthPoints()}} strength points (maxing out at 12).</text>
+      <text x="10" y="90">Terrorist will receive {{data.token.territory.recruitStrengthPoints()}} strength points (maxing out at 12).</text>
       <text y="115">&#8226; On a roll of 6 the Operative is also killed, remaining dead until</text>
       <text x="10" y="135">thier next turn, and the Terrorist will receive {{viktoryPoints(1)}}.</text>
     </g>
     <g [style.display]="showFor('Bomb')">
       <text [style.display]="showFor('BombSquad')" >&#8226; Bomb Squad throw two dice against bombs and discard</text>
       <text [style.display]="showFor('BombSquad')" x="10" y="20">the higher roll.</text>
-      <text [style.display]="hideFor('BombSquad')" y="20">&#8226; {{data.operative &amp;&amp; data.operative.title}} throw one die against bombs.</text>
+      <text [style.display]="hideFor('BombSquad')" y="20">&#8226; {{data.operative &amp;&amp; data.operative.meepleTitle}} throw one die against bombs.</text>
       <text y="45">&#8226; This bomb will be defused on a roll of 1-3.</text>
       <text y="70">&#8226; This bomb will explode on a roll of 4-6 and the Terrorist will</text>
-      <text x="10" y="90">receive {{viktoryPoints(data.token.territory!.bombViktoryPoints())}}.</text>
+      <text x="10" y="90">receive {{viktoryPoints(data.token.territory.bombViktoryPoints())}}.</text>
       <text y="115">&#8226; On a roll of 6 the Operative is also killed, remaining dead until</text>
       <text x="10" y="135">thier next turn, and the Terrorist will receive 1 additional</text>
       <text x="10" y="155">{{viktoryPoints()}}.</text>
@@ -56,11 +56,11 @@
   </g>
   <g [style.display]="showFor(rolls)">
     <g [style.display]="showFor('Trap')" transform="translate(210 275)">
-      <g [style.display]="showFor(data.operative &amp;&amp; data.operative.team.strength&gt;0)">
+      <g [style.display]="showFor(data.operative &amp;&amp; data.operative.isAlive())">
         <text y="25" text-anchor="middle">The trap was defeated. The Operative's</text>
-        <text y="45" text-anchor="middle">strength went down by {{rolls &amp;&amp; rolls[0]}} to {{ data.operative &amp;&amp; data.operative.team.strength}}.</text>
+        <text y="45" text-anchor="middle">strength went down by {{rolls &amp;&amp; rolls[0]}} to {{ data.operative &amp;&amp; data.operative.strength}}.</text>
       </g>
-      <g [style.display]="showFor(data.operative &amp;&amp; data.operative.team.strength===0)">
+      <g [style.display]="showFor(data.operative &amp;&amp; data.operative.isDead())">
         <text y="15" text-anchor="middle">The trap was successful and the Operative</text>
         <text y="35" text-anchor="middle">killed, earning The Terrorist {{viktoryPoints(1)}}.</text>
         <text y="60" text-anchor="middle">The Terrorist now has {{viktoryPoints(data.token.team.viktoryPoints)}}.</text>
@@ -72,9 +72,9 @@
       </g>
       <g [style.display]="showFor(rolls &amp;&amp; rolls[0]&gt;=4)">
         <text text-anchor="middle">The recruiting cell was successfull, giving the Terrorist</text>
-        <text y="20" text-anchor="middle">{{data.token.territory!.recruitStrengthPoints()}} strength points, bringing their strength to {{data.token.team.strength}}.</text>
+        <text y="20" text-anchor="middle">{{data.token.territory.recruitStrengthPoints()}} strength points, bringing their strength to {{data.token.team.strength}}.</text>
       </g>
-      <g [style.display]="showFor(data.operative &amp;&amp; data.operative.team.strength===0)">
+      <g [style.display]="showFor(data.operative &amp;&amp; data.operative.isDead())">
         <text y="45" text-anchor="middle">The Operative was killed, earning the Terrorist {{viktoryPoints(1)}}.</text>
         <text y="65" text-anchor="middle">The Terrorist now has {{viktoryPoints(data.token.team.viktoryPoints)}}.</text>
       </g>
@@ -84,11 +84,11 @@
         <text y="35" text-anchor="middle">The bomb was defused.</text>
       </g>
       <g [style.display]="showFor(rolls &amp;&amp; rolls[0]&gt;=4)">
-        <text text-anchor="middle">The bomb exploded, giving the Terrorist {{viktoryPoints(data.token.territory!.bombViktoryPoints())}}.</text>
-        <g [style.display]="showFor(data.operative &amp;&amp; data.operative.team.strength&gt;0)">
+        <text text-anchor="middle">The bomb exploded, giving the Terrorist {{viktoryPoints(data.token.territory.bombViktoryPoints())}}.</text>
+        <g [style.display]="showFor(data.operative &amp;&amp; data.operative.isAlive())">
           <text y="35" text-anchor="middle">The Operative survived the explosion.</text>
         </g>
-        <g [style.display]="showFor(data.operative &amp;&amp; data.operative.team.strength===0)">
+        <g [style.display]="showFor(data.operative &amp;&amp; data.operative.isDead())">
           <text y="25" text-anchor="middle">The Operative was killed in the explosion, giving</text>
           <text y="45" text-anchor="middle">the Terrorist 1 extra {{viktoryPoints()}}.</text>
         </g>
@@ -101,18 +101,18 @@
       <text>The trap did not catch any Operatives.</text>
     </g>
     <g [style.display]="showFor('Recruit')" transform="translate(210 300)">
-      <text>The recruiting cell was successfull, giving the Terrorist {{data.token.territory!.recruitStrengthPoints()}} strength points</text>
+      <text>The recruiting cell was successfull, giving the Terrorist {{data.token.territory.recruitStrengthPoints()}} strength points</text>
       <text y="20">bringing their strength to {{data.token.team.strength}}.</text>
     </g>
     <g [style.display]="showFor('Bomb')" transform="translate(210 300)">
-      <text>The bomb exploded, giving the Terrorist {{viktoryPoints(data.token.territory!.bombViktoryPoints())}}.</text>
+      <text>The bomb exploded, giving the Terrorist {{viktoryPoints(data.token.territory.bombViktoryPoints())}}.</text>
       <text y="25">The Terrorist now has {{viktoryPoints(data.token.team.viktoryPoints)}}.</text>
     </g>
   </g>
   <g svg-dialog-action>
     <g svg-dialog-button="flat" width="180" (click)="close()">
       <text [style.display]="showFor(data.operative &amp;&amp; !rolls)">{{data.operative &amp;&amp; data.operative.tokenRollStrength(data.token)===2 ? "Roll Two Dice" : "Roll One Die"}}</text>
-      <text [style.display]="showFor(data.operative &amp;&amp; rolls)">{{data.operative &amp;&amp; data.operative.team.strength===0 ? "Done" : "Next"}}</text>
+      <text [style.display]="showFor(data.operative &amp;&amp; rolls)">{{data.operative &amp;&amp; data.operative.isDead() ? "Done" : "Next"}}</text>
       <text [style.display]="showFor(!data.operative)">"Next"</text>
     </g>
   </g>

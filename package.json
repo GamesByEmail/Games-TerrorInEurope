@@ -22,7 +22,7 @@
     "@angular/platform-browser": "~11.0.4",
     "@angular/platform-browser-dynamic": "~11.0.4",
     "@angular/router": "~11.0.4",
-    "@gamesbyemail/base": "0.0.30",
+    "@gamesbyemail/base": "0.1.0",
     "@packageforge/deep-copy": "0.0.2",
     "@packageforge/deferred": "0.0.5",
     "@packageforge/geometry2d": "0.0.11",

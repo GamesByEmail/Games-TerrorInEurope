@@ -27,32 +27,75 @@ export class PlayComponent implements OnInit {
       states: [
         {
           moveNumber: 0,
-          board: "",
+          board:undefined,
           teams: [
-            '@',
-            '',
-            '',
-            '',
-            ''
+            {T:true,c:-1,s:6},
+            {c:-1,s:6},
+            {c:-1,s:6},
+            {a:0},
+            {v:0,s:12}
           ],
           moves: []
         }
       ]
     };
     this.game.setGameData(gameData);
-    return;    
-    return this.game.setState({
-      "moveNumber": 12,
-      "board": "6#r0&T|7#A&B&F|8#t2|9#b1|",
+    return;
+
+
+    return this.game.server.init(<any>{
+      "moveNumber": 16,
       "teams": [
-        "@6",
-        "6",
-        "6",
-        "6",
-        "12"
+        {
+          "c": 7,
+          "s": 6
+        },
+        {
+          "c": 7,
+          "s": 6
+        },
+        {
+          "c": 7,
+          "s": 6,
+          "T": true
+        },
+        {
+          "a": 0
+        },
+        {
+          "v": 0,
+          "s": 12,
+          "_": {
+            "c": 6,
+            "t": [
+              {
+                "c": 6,
+                "t": "r",
+                "a": 0,
+                "v": 0,
+                "r": 0
+              },
+              {
+                "c": 8,
+                "t": "t",
+                "a": 2,
+                "v": 0,
+                "r": 0
+              },
+              {
+                "c": 9,
+                "t": "b",
+                "a": 1,
+                "v": 0,
+                "r": 0
+              }
+            ]
+          }
+        }
       ],
       "moves": []
     });
+    
 
   }
 }

@@ -8,11 +8,13 @@ import { Game } from '../../../game/game';
 import { fromEvent, Subscription, Observable, Subject, race } from 'rxjs';
 import { switchMap, map, takeUntil } from 'rxjs/operators';
 import { Point2D, Rectangle2D } from '@packageforge/geometry2d';
-import { CovertOpToken, Operative, Piece } from '../../../game/piece';
+import { Piece } from '../../../game/piece';
 import { cityMapData, IMapPoint } from './city-map-data';
-import { Terrorist } from '../../../game/pieces/meeple/terrorist';
 import { CovertOpsDialogService } from '../dialogs/covert-ops/covert-ops-dialog.service';
-import { CombatDialogService, ICombatDialogResult } from '../dialogs/combat/combat-dialog.service';
+import { CombatDialogService } from '../dialogs/combat/combat-dialog.service';
+import { Team } from '../../../game/team';
+import { CovertOpToken, Token } from '../../../game/pieces/token/token';
+import { ETokenResult, ETokenType } from '../../../game/team-state';
 
 @Component({
   selector: 'gamesbyemail-games-terrorInEurope-default-board',
@@ -94,45 +96,6 @@ export class BoardComponent implements AfterViewInit {
   get opposingTeam() {
     return this.perspectiveTeam.getNext(true)!;
   }
-  territoryMouseup(territory: Territory) {
-    this.territoryUp.next(territory);
-  }
-  territoryMousedown(fromTerritory: Territory) {
-    if (this.game.over || !fromTerritory.pieces)
-      return;
-    const target = <SVGElement>fromTerritory.pieces[0].elementRef!.nativeElement;
-    if (!target)
-      return;
-    this.game.beginningMove();
-    this.game.save();
-    this.boardService.moveToTopOfStack(target);
-    const startRect = new Rectangle2D(target.getBoundingClientRect());
-    const start = startRect.center();
-    //const start = new Point2D(md.clientX, md.clientY);
-    const startTrans = this.boardService.getTranslation(target);
-    this.mousemove
-      .pipe(map((mm) => {
-        mm.preventDefault();
-        return (new Point2D(mm.clientX, mm.clientY)).subtract(start);
-      }))
-      .pipe(takeUntil(race(this.mouseup, this.territoryUp)
-        .pipe(map(toTerritory => {
-          (toTerritory ? fromTerritory.pieces[0]!.attemptMove(toTerritory) : Promise.resolve(false)).then(suceeded => {
-            if (suceeded) {
-              ;//this.game.incrementTurn();
-            } else {
-              this.game.restore();
-              this.boardService.setTranslation(target, startTrans);
-            }
-          });
-        }))
-      ))
-      .pipe(switchMap(pos => {
-        return this.boardService.moveToRect(target, startRect.clone().translate(pos).constrainTo(this.boardArea.nativeElement.getBoundingClientRect()), 0);
-      })).subscribe(() => {
-        ;
-      });
-  }
   boardTransform() {
     let transform = "";
     transform += " translate(" + (-this.viewBox.x) + " " + (-this.viewBox.y) + ")";
@@ -150,21 +113,20 @@ export class BoardComponent implements AfterViewInit {
     //     transform += " translate(" + (pieceOffset.origin.x+pieceOffset.offset.x*piece.offset) + " " + (pieceOffset.origin.y+pieceOffset.offset.y*piece.offset) + ")";
     return transform;
   }
-  openCovertOps(operative: Operative | undefined, token: CovertOpToken, pointFnc: () => IMapPoint) {
+  openCovertOps(operative: Team | undefined, token: CovertOpToken, pointFnc: () => IMapPoint) {
     const point = pointFnc();
     this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
     let ref = this.covertOpsDialogService.open(this.dialogArea, { operative: operative, token: token }, this.dialogOverlay);
     return ref.afterClosed();//.pipe(finalize(()=>console.log("closezit:"+ref.close())));
   }
-  openCombat(attacker: Operative, defender: Terrorist, pointFnc: () => IMapPoint): Observable<ICombatDialogResult | undefined>
-  openCombat(attacker: Terrorist, defenders: Operative[], pointFnc: () => IMapPoint): Observable<ICombatDialogResult | undefined>
-  openCombat(attacker: Operative | Terrorist, defender: Terrorist | Operative[], pointFnc: () => IMapPoint) {
+  openCombat(attacker: Team, defenders: Team[], pointFnc: () => IMapPoint) {
     const point = pointFnc();
     this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
-    const args = Array.isArray(defender) ?
-      { attacker: attacker as Terrorist, defenders: defender as Operative[] } :
-      { attacker: attacker as Operative, defender: defender as Terrorist };
-    let ref = this.combatDialogService.open(this.dialogArea, args, this.dialogOverlay);
+    let ref = this.combatDialogService.open(this.dialogArea, { attacker: attacker, defenders: defenders }, this.dialogOverlay);
     return ref.afterClosed();//.pipe(finalize(()=>console.log("closezit:"+ref.close())));
   }
+  tokenClass(token: Token) {
+    return { aged: token.result === ETokenResult.AGED, won: token.result === ETokenResult.WON, lost: token.result === ETokenResult.LOST };
+  }
+  ETokenType=ETokenType
 }

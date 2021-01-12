@@ -838,24 +838,27 @@
       <line class="road" x1="1550" y1="1258" x2="1508" y2="1156" /> <!-- Eskisehir - Istanbul -->
     </g>
   
-    <g [ngClass]="{gameStarted:game.moveNumber&gt;3}">
+    <g [ngClass]="{gameStarted:game.doneSettingUp()}">
       <g *ngFor="let territory of game.board.territories, index as i" [ngClass]="territory.region" [attr.transform]="'translate('+territory.mapData.location.x+' '+ territory.mapData.location.y+')'" onmouseover="if (this.parentNode.lastChild!==this) this.parentNode.appendChild(this)">
         <g class="urbanPair" [ngClass]="{canSelect:territory.canSelect,showTokenSelect:territory.showTokenSelect}">
-          <use class="urban" [ngClass]="{looksOccupied:territory.canSelect &amp;&amp; game.moveNumber&gt;3 &amp;&amp; territory.looksOccupied()}"  [attr.href]="territory.mapData.type" (click)="territory.click($event)"/>
+          <use class="urban" [ngClass]="{looksOccupied:territory.canSelect &amp;&amp; game.doneSettingUp() &amp;&amp; territory.looksOccupied()}"  [attr.href]="territory.mapData.type" (click)="territory.click($event)"/>
           <use *ngIf="territory.mapData.anchor" class="anchor" href="#Anchor" [attr.x]="territory.mapData.anchor.x" [attr.y]="territory.mapData.anchor.y" />
           <text *ngFor="let title of territory.mapData.titles" class="cityText" [ngClass]="territory.mapData.titleClass!" [attr.x]="title.location.x" [attr.y]="title.location.y">{{title.title}}</text>
-          <g *ngFor="let piece of territory.pieces">
-            <g *ngIf="piece.show()" [attr.transform]="'translate('+(piece.offset*20)+' 0)'" [ngClass]="{fade:game.moveNumber&gt;3 &amp;&amp; territory.canSelect &amp;&amp; piece.isMeeple() &amp;&amp; !piece.isOurTurn()}">
-              <use [attr.href]="'#'+piece.templateKey.type" [ngClass]="{'token placed':piece.isToken(),aged:piece.result==='AGED',won:piece.result==='WON',lost:piece.result==='LOST'}" (click)="piece.isMeeple() &amp;&amp; territory.click($event)"/>
-              <text *ngIf="piece.isToken() &amp;&amp; piece.age>0" y="-40" class="ageText">{{piece.age}}</text>
-              <text *ngIf="piece.isMeeple() &amp;&amp; piece.team.strength>0" x="-15" class="strengthText">{{piece.team.strength}}</text>
+          <g *ngFor="let piece of territory.pieces" [attr.transform]="'translate('+(piece.offset*20)+' 0)'">
+            <g *ngIf="piece.isMeeple()" [ngClass]="{fade:game.doneSettingUp() &amp;&amp; territory.canSelect &amp;&amp; !piece.isOurTurn()}">
+              <use [attr.href]="piece.svgId()" (click)="territory.click($event)"/>
+              <text *ngIf="piece.team.isAlive()" x="-15" class="strengthText">{{piece.team.strength}}</text>
+            </g>
+            <g *ngIf="piece.isToken()">
+              <use [attr.href]="piece.svgId()" class="token placed" [ngClass]="tokenClass(piece)"/>
+              <text *ngIf="piece.age>0" y="-40" class="ageText">{{piece.age}}</text>
             </g>
           </g>
           <g *ngIf="game.showTokenSelect(territory)" class="tokenSelect">
             <circle r="35" fill="transparent"/>
-            <use href="#Trap" class="token" [attr.transform]="'scale(0.4) translate(-52,'+(territory.bombable() ? -30 : 0)+')'" (click)="territory.click($event,'TRAP')"/>
-            <use href="#Recruit" class="token" [attr.transform]="'scale(0.4) translate(52,'+(territory.bombable() ? -30 : 0)+')'" (click)="territory.click($event,'RECRUIT')"/>
-            <use *ngIf="territory.bombable()" href="#Bomb" class="token" transform="scale(0.4) translate(0,60)" (click)="territory.click($event,'BOMB')"/>
+            <use href="#Trap" class="token" [attr.transform]="'scale(0.4) translate(-52,'+(territory.bombable() ? -30 : 0)+')'" (click)="territory.click($event,ETokenType.TRAP)"/>
+            <use href="#Recruit" class="token" [attr.transform]="'scale(0.4) translate(52,'+(territory.bombable() ? -30 : 0)+')'" (click)="territory.click($event,ETokenType.RECRUIT)"/>
+            <use *ngIf="territory.bombable()" href="#Bomb" class="token" transform="scale(0.4) translate(0,60)" (click)="territory.click($event,ETokenType.BOMB)"/>
           </g>
         </g>
       </g>

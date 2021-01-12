@@ -23,6 +23,10 @@
       "game": [
         "dist/game/game",
         "dist/game"
+      ],
+      "server": [
+        "dist/server/server",
+        "dist/server"
       ]
     }
   },

@@ -4,14 +4,12 @@ import { Board, IBoardSave } from './board';
 import { Team, ITeamSave } from './team';
 import { TeamId } from './team-id';
 import { Move, IModMove } from './move';
-
-import { Operative, Piece } from './piece';
-import { TERRITORY_DELIMETER, TERRITORY_STATE_DELIMETER, PIECE_DELIMETER } from './delimeter';
+import { Piece } from './piece';
 import { ICityMapData } from '../boards/default/board/city-map-data';
-import { Terrorist } from './pieces/meeple/terrorist';
-import { Token, TokenChoice } from './pieces/token/token';
+import { Token } from './pieces/token/token';
+import { ETokenResult, ETokenType, ETokenVisibility, ITeamState } from './team-state';
 
-export interface ITerritorySave extends IBaseTerritorySave<Game, IGameOptions, IGameState, IGameSave, Board, IBoardSave, Territory, ITerritorySave, Team, TeamId, ITeamSave, Move, IModMove> {
+export interface ITerritorySave extends IBaseTerritorySave<Game, IGameOptions, IGameState, IGameSave, Board, undefined, IBoardSave, Territory, undefined, ITerritorySave, Team, TeamId, ITeamState, ITeamSave, Move, IModMove> {
   canSelect: boolean;
   pieces: Piece[];
 }
@@ -32,7 +30,7 @@ export interface ITerritoryData extends IBaseMapTerritoryData {
   adjacent: IAdjacent
 }
 
-export class Territory extends BaseMapTerritory<Game, IGameOptions, IGameState, IGameSave, Board, IBoardSave, Territory, ITerritoryData, ITerritorySave, Team, TeamId, ITeamSave, Move, IModMove> {
+export class Territory extends BaseMapTerritory<Game, IGameOptions, IGameState, IGameSave, Board, undefined, IBoardSave, Territory, ITerritoryData, undefined, ITerritorySave, Team, TeamId, ITeamState, ITeamSave, Move, IModMove> {
   public pieces: Piece[] = [];
   public region: Region
   public size: CitySize
@@ -62,10 +60,13 @@ export class Territory extends BaseMapTerritory<Game, IGameOptions, IGameState, 
       this.checkPieces();
     }
   }
+  clear() {
+    this.pieces.length = 0;
+  }
   checkPieces() {
     this.pieces.sort(function (a, b) { return a.sortOrder() - b.sortOrder(); });
     this.pieces.forEach(p => p.offset = 0);
-    const meeples = this.pieces.filter(p => p.isMeeple() && p.show());
+    const meeples = this.pieces.filter(p => p.isMeeple());
     var start = -0.5 * (meeples.length - 1);
     meeples.forEach(piece => piece.offset = start++);
   }
@@ -74,31 +75,11 @@ export class Territory extends BaseMapTerritory<Game, IGameOptions, IGameState, 
     this.canSelect = false;
     this.showTokenSelect = false;
   }
-  setState(state: string): string {
-    if (state) {
-      let delim = state.indexOf(TERRITORY_STATE_DELIMETER);
-      if (parseInt(state.substr(0, delim)) === this.index) {
-        state = state.substr(delim + 1);
-        delim = state.indexOf(TERRITORY_DELIMETER);
-        const pieceStates = state.substr(0, delim);
-        state = state.substr(delim + 1);
-        if (pieceStates && pieceStates.length > 0)
-          pieceStates.split(PIECE_DELIMETER).forEach(pieceState => {
-            this.board.createPiece(pieceState).changeTerritory(this);
-          });
-      }
-    }
-    return state;
+  setState(state:undefined) {
+    return undefined;
   }
-  getState(): string {
-    let state = "";
-    if (this.pieces.length > 0) {
-      state += this.index;
-      state += TERRITORY_STATE_DELIMETER;
-      state += this.pieces.map(piece => piece.getState()).filter(state=>state.length>0).join(PIECE_DELIMETER);
-      state += TERRITORY_DELIMETER;
-    }
-    return state;
+  getState() {
+    return undefined;
   }
   save() {
     super.save();
@@ -157,16 +138,17 @@ export class Territory extends BaseMapTerritory<Game, IGameOptions, IGameState, 
     return this.getInRange("road", road).concat(this.getInRange("rail", rail).concat(this.getInRange("sea", sea).concat(this.getInRange("air", air)))).filter((c, i, a) => a.indexOf(c) === i);
   }
   findOperatives(alive?: boolean) {
-    return this.pieces.filter((piece): piece is Operative => piece.isOperative() && (alive === undefined || alive === (piece.team.strength > 0)));
+    let o = this.board.game.getOperatives().filter(o => o.city === this);
+    if (typeof (alive) === "boolean")
+      o = o.filter(o => o.isAlive() === alive);
+    return o;
   }
   hasOperative(alive?: boolean) {
     return this.findOperatives(alive).length > 0;
   }
   findTerrorist() {
-    for (let i = 0; i < this.pieces.length; i++)
-      if (this.pieces[i].isTerrorist())
-        return this.pieces[i] as Terrorist;
-    return undefined;
+    const t = this.board.game.getTerrorist();
+    return t && t.city === this ? t : undefined;
   }
   hasTerrorist() {
     return this.findTerrorist() !== undefined;
@@ -176,8 +158,8 @@ export class Territory extends BaseMapTerritory<Game, IGameOptions, IGameState, 
       const piece = this.pieces[i];
       if (piece instanceof Token &&
         (expired === undefined || (expired === piece.hasExpired())) &&
-        (revealed === undefined || (revealed === (piece.revealed !== "REVEALED"))) &&
-        (result === undefined || (result === (piece.result !== ""))
+        (revealed === undefined || (revealed === (piece.visibility !== ETokenVisibility.VISIBLE))) &&
+        (result === undefined || (result === (piece.result !== ETokenResult.UNDEFINED))
         )
       )
         return piece as T;
@@ -186,14 +168,14 @@ export class Territory extends BaseMapTerritory<Game, IGameOptions, IGameState, 
   }
   looksOccupied() {
     for (let i = 0; i < this.pieces.length; i++)
-      if (this.pieces[i].isMeeple() && this.pieces[i].show())
+      if (this.pieces[i].isMeeple())
         return true;
     return false;
   }
-  bombable(){
-    return this.region!=="African" && this.region!=="Turk";
+  bombable() {
+    return this.region !== "African" && this.region !== "Turk";
   }
-  click(event: MouseEvent, token?: TokenChoice) {
+  click(event: MouseEvent, token?: ETokenType) {
     if (!this.canSelect)
       return;
     event.preventDefault();
