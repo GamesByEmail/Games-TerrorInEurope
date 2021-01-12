@@ -40,8 +40,8 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
     return this.id;
   }
   setState(state: ITeamState) {
-    this.myTurn = state.T === true;
-    this.playing = state.P !== false;
+    this.myTurn = state.$T === true;
+    this.playing = state.$P !== false;
     this.city = <any>undefined;
     this.setStrength(100);
     this.viktoryPoints = 0;
@@ -68,10 +68,10 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
         this.rolls = state.r;
       if (state.t)
         this.addTokens(state.t);
-      if (state._) {
-        if (state._.c >= 0)
-          this.city = this.game.board.territories[state._.c];
-        this.addTokens(state._.t);
+      if (state.$_) {
+        if (state.$_.c >= 0)
+          this.city = this.game.board.territories[state.$_.c];
+        this.addTokens(state.$_.t);
       }
     }
     if (this.city)
@@ -101,15 +101,13 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
       if (pubTokens && pubTokens.length > 0)
         state.t = pubTokens;
       if (this.isUs() && this.city)
-        state._ = {
+        state.$_ = {
           c: this.city.index,
           t: this.getTokenStates(true)
         };
     }
-    if (this.myTurn)
-      state.T = true;
-    if (!this.playing)
-      state.P = false;
+    state.$T = this.myTurn;
+    state.$P = this.playing;
     return state;
   }
   addTokens(tokenStates: ITokenState[]) {

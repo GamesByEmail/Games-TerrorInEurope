@@ -1,15 +1,15 @@
 export type ITeamState = IOpsState | IInfoState | ITerrState
 
 export interface IOpsState {
-  T?: boolean // turn=false
-  P?: boolean // playing=true
+  $T?: boolean // turn=false
+  $P?: boolean // playing=true
   c: number //city index
   s: number // strength
   r?: number[] //rolls
 }
 export interface IInfoState {
-  T?: boolean // turn=false
-  P?: boolean // playing=true
+  $T?: boolean // turn=false
+  $P?: boolean // playing=true
   a: number // aged move number
 }
 
@@ -41,14 +41,14 @@ export interface ITokenState {
 }
 
 export interface ITerrState {
-  T?: boolean // turn=false
-  P?: boolean // playing=true
+  $T?: boolean // turn=false
+  $P?: boolean // playing=true
   v: number // viktory points
   s: number // strength
   r?: number[] //rolls
   c?: number // city
   t?: ITokenState[] // public tokens
-  _?: {
+  $_?: {
     c: number // city index
     t: ITokenState[] //private tokens
   }

@@ -169,7 +169,10 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
       const token = createToken(this.board.game, tokenType);
       token.changeTerritory(city);
     }
-    turnTeam.city = city;
+    if (city===turnTeam.city)
+      turnTeam.setStrength(100);
+    else
+      turnTeam.city = city;
     if (turnTeam.isOperative() || (turnTeam.isTerrorist() && !city.hasOperative(true)))
       this.incrementTurn();
     this.saveIt(turnTeam);

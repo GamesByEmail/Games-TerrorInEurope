@@ -1,45 +1,12 @@
-import { IInfoState, IOpsState, ITerrState, ITokenState } from "projects/game/src/lib/game/team-state";
+import { BaseServer } from "./base.server";
+import { IOpsState, ITokenState } from "projects/game/src/lib/game/team-state";
+import { IGameState } from "projects/game/src/lib/game/game";
 
-interface IGameState {
-  moveNumber: number
-  teams: [IOpsState, IOpsState, IOpsState, IInfoState, ITerrState];
-}
-interface ITeam {
-  uuid?: string;
-}
-
-export class ServerService {
-  state!: IGameState;
-  constructor(private game: any) { }
-
-  init<T extends IGameState>(state: T) {
-    this.state = JSON.parse(JSON.stringify(state));
-    this.updateWhoWeAre();
-    this.game.setState(this.getState());
-  }
-  updateWhoWeAre() {
-    for (let i = 0; i < this.state.teams.length; i++)
-      this.game.teams[i].uuid = this.state.teams[i].T ? "ASDFASDFASDF" : undefined;
-  }
-  setState<T extends IGameState>(state: T, team: ITeam) {
-    const oldState = this.state;
-    this.state = JSON.parse(JSON.stringify(state));
-    if (oldState && this.game.teams[4] !== team)
-      this.state.teams[4]._ = oldState.teams[4]._;
-    this.move(this.state, oldState);
-    this.updateWhoWeAre();
-    navigator.clipboard.writeText("\r\nreturn this.game.server.init(" + JSON.stringify(this.state,null,2) + ");\r\n");
-  }
-  getState() {
-    const state = JSON.parse(JSON.stringify(this.state));
-    if (!this.game.teams[4].uuid)
-      delete (state.teams[4]._);
-    return state;
-  }
-  move<T extends IGameState>(state: T, oldState: T) {
+export class ServerService extends BaseServer<IGameState> {
+  move(state: IGameState, oldState: IGameState) {
     if (!oldState)
       return;
-    if (oldState.teams[3].T && state.teams[4].T) {
+    if (oldState.teams[3].$T && state.teams[4].$T) {
       const infoState = state.teams[3];
       if (infoState.a < state.moveNumber - 1) {
         infoState.a = state.moveNumber;
@@ -47,21 +14,28 @@ export class ServerService {
         if (!terrState.t)
           terrState.t = [];
         this.ageTokens(terrState.t, 3);
-        terrState.t.push(...this.ageTokens(terrState._!.t, 2));
-        if (terrState.t.length===0)
+        terrState.t.push(...this.ageTokens(terrState.$_!.t, 2));
+        if (terrState.t.length === 0)
           delete terrState.t;
-        if (JSON.stringify(terrState.t)!==JSON.stringify(oldState.teams[4].t)){
-          delete state.teams[4].T;
-          state.teams[3].T=true;
+        if (JSON.stringify(terrState.t) !== JSON.stringify(oldState.teams[4].t)) {
+          delete state.teams[4].$T;
+          state.teams[3].$T = true;
         }
       }
     } else {
-      const tState=state.teams[4];
+      const tState = state.teams[4];
       delete tState.c;
-      if (tState._)
-        for (let i = 0; i < 3; i++)
-          if ((<IOpsState>state.teams[i]).c===tState._.c)
-            tState.c=tState._.c;
+      if (tState.$_)
+        for (let i = 0; i < 3; i++) {
+          const oState=state.teams[i] as IOpsState;
+          if (oState.c === tState.$_.c) {
+            tState.c = tState.$_.c;
+            if (this.justMovedHere(oState, oState)) {
+              this.clearTurns(state);
+              oState.$T=true;
+            }
+          }
+        }
     }
   }
   ageTokens(tokens: ITokenState[], maxAge: number) {
@@ -70,5 +44,11 @@ export class ServerService {
       if ((++tokens[i].a) > maxAge)
         agedOut.push(tokens.splice(i--, 1)[0]);
     return agedOut;
+  }
+  justMovedHere(nState: IOpsState, oState: IOpsState) {
+    return oState.$T && nState.c !== oState.c;
+  }
+  justRevivedHere(nState: IOpsState, oState: IOpsState) {
+    return oState.$T && nState.c === oState.c && oState.s === 0 && nState.s > 0;
   }
 }

@@ -29,7 +29,7 @@ export class PlayComponent implements OnInit {
           moveNumber: 0,
           board:undefined,
           teams: [
-            {T:true,c:-1,s:6},
+            {$T:true,c:-1,s:6},
             {c:-1,s:6},
             {c:-1,s:6},
             {a:0},
@@ -40,8 +40,8 @@ export class PlayComponent implements OnInit {
       ]
     };
     this.game.setGameData(gameData);
-    return;
-    
+    //return;
+
     return this.game.server.init({
       "moveNumber": 16,
       "teams": [
@@ -56,7 +56,7 @@ export class PlayComponent implements OnInit {
         {
           "c": 7,
           "s": 6,
-          "T": true
+          "$T": true
         },
         {
           "a": 0
@@ -64,7 +64,7 @@ export class PlayComponent implements OnInit {
         {
           "v": 0,
           "s": 12,
-          "_": {
+          "$_": {
             "c": 6,
             "t": [
               {
