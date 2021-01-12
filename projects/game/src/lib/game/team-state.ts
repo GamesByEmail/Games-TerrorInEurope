@@ -1,18 +1,19 @@
 export type ITeamState = IOpsState | IInfoState | ITerrState
 
 export interface IOpsState {
-  T?: boolean
-  P?: boolean
+  T?: boolean // turn=false
+  P?: boolean // playing=true
   c: number //city index
   s: number // strength
   r?: number[] //rolls
 }
 export interface IInfoState {
-  T?: boolean
-  P?: boolean
+  T?: boolean // turn=false
+  P?: boolean // playing=true
   a: number // aged move number
 }
 
+export type LTokenType = "t" | "b" | "r" | "m" | "u";
 export enum ETokenType {
   TRAP = "t",
   BOMB = "b",
@@ -33,15 +34,15 @@ export enum ETokenResult {
 }
 export interface ITokenState {
   c: number // city index
-  t: ETokenType // type
+  t: LTokenType // type
   a: number //age
   v: ETokenVisibility // reveal
   r: ETokenResult // resolution
 }
 
 export interface ITerrState {
-  T?: boolean
-  P?: boolean
+  T?: boolean // turn=false
+  P?: boolean // playing=true
   v: number // viktory points
   s: number // strength
   r?: number[] //rolls

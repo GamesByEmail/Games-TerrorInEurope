@@ -41,9 +41,8 @@ export class PlayComponent implements OnInit {
     };
     this.game.setGameData(gameData);
     return;
-
-
-    return this.game.server.init(<any>{
+    
+    return this.game.server.init({
       "moveNumber": 16,
       "teams": [
         {

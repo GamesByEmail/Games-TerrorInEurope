@@ -28,7 +28,7 @@ export class ServerService {
       this.state.teams[4]._ = oldState.teams[4]._;
     this.move(this.state, oldState);
     this.updateWhoWeAre();
-    navigator.clipboard.writeText("\r\nreturn this.game.server.init(<any>" + JSON.stringify(this.state,null,2) + ");\r\n");
+    navigator.clipboard.writeText("\r\nreturn this.game.server.init(" + JSON.stringify(this.state,null,2) + ");\r\n");
   }
   getState() {
     const state = JSON.parse(JSON.stringify(this.state));
