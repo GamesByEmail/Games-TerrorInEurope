@@ -3,45 +3,43 @@
     <text x="210" text-anchor="middle">Combat</text>
   </g>
   <g [style.display]="hideFor(tAttack)">
-    <text x="210" y="50" text-anchor="middle">The {{attacker.meepleTitle}} have discovered the {{eval(defender,'title')}} in</text>
+    <text x="210" y="50" text-anchor="middle">The {{attacker.meepleTitle}} discovered the {{eval(defender,'title')}} in</text>
     <text x="210" y="70" text-anchor="middle">{{attacker.city.title}} and must combat them.</text>
   </g>
   <g [style.display]="showFor(tAttack)">
-    <text x="210" y="50" text-anchor="middle">The {{attacker.meepleTitle}} has attacked Operatives in</text>
+    <text x="210" y="50" text-anchor="middle">The {{attacker.meepleTitle}} {{pluralForm('has',attacker.meepleTitle)}} attacked Operatives in</text>
     <text x="210" y="70" text-anchor="middle">{{attacker.city.title}} and must combat them.</text>
   </g>
   <g transform="translate(0 115)">
     <g transform="translate(100 0)">
-      <g [style]="combatantStyle()">
-        <use [attr.href]="combatantHref()"/>
-        <text x="-15" y="-25"  [style.display]="showFor(combatantStrength())" class="stengthText">{{combatantStrength()}}</text>
-        <text x="15" y="-25" [style.display]="showFor(combatantModifier())" class="modifierText">{{combatantModifier()}}</text>
-      </g>
+      <use [attr.href]="combatantHref()"/>
+      <text x="-15" y="-25"  [style.display]="showFor(combatantStrength())" class="stengthText">{{combatantStrength()}}</text>
+      <text x="15" y="-25" [style.display]="showFor(combatantModifier())" class="modifierText">{{combatantModifier()}}</text>
     </g>
-    <g transform="translate(190 0)">
-      <g [style]="combatantStyle(0)">
-        <use [attr.href]="combatantHref(0)" (click)="defenderClick(0)"/>
-        <text x="-15" y="-25" [style.display]="showFor(combatantStrength(0))" class="stengthText">{{combatantStrength(0)}}</text>
-        <text x="15" y="-25" [style.display]="showFor(combatantModifier(0))" class="modifierText">{{combatantModifier(0)}}</text>
-      </g>
-    </g>
-    <g transform="translate(255 0)">
-      <g [style]="combatantStyle(1)">
-        <use [attr.href]="combatantHref(1)" (click)="defenderClick(1)"/>
-        <text x="-15" y="-25" [style.display]="showFor(combatantStrength(1))" class="stengthText">{{combatantStrength(1)}}</text>
-        <text x="15" y="-25" [style.display]="showFor(combatantModifier(1))" class="modifierText">{{combatantModifier(1)}}</text>
-      </g>
-    </g>
-    <g transform="translate(320 0)">
-      <g [style]="combatantStyle(2)">
+    <g [attr.transform]="combatantTransform(320,2)">
+      <g [class]="combatantClass(2)">
         <use [attr.href]="combatantHref(2)" (click)="defenderClick(2)"/>
         <text x="-15" y="-25" [style.display]="showFor(combatantStrength(2))" class="stengthText">{{combatantStrength(2)}}</text>
         <text x="15" y="-25" [style.display]="showFor(combatantModifier(2))" class="modifierText">{{combatantModifier(2)}}</text>
       </g>
     </g>
+    <g [attr.transform]="combatantTransform(255,1)">
+      <g [class]="combatantClass(1)">
+        <use [attr.href]="combatantHref(1)" (click)="defenderClick(1)"/>
+        <text x="-15" y="-25" [style.display]="showFor(combatantStrength(1))" class="stengthText">{{combatantStrength(1)}}</text>
+        <text x="15" y="-25" [style.display]="showFor(combatantModifier(1))" class="modifierText">{{combatantModifier(1)}}</text>
+      </g>
+    </g>
+    <g [attr.transform]="combatantTransform(190,0)">
+      <g [class]="combatantClass(0)">
+        <use [attr.href]="combatantHref(0)" (click)="defenderClick(0)"/>
+        <text x="-15" y="-25" [style.display]="showFor(combatantStrength(0))" class="stengthText">{{combatantStrength(0)}}</text>
+        <text x="15" y="-25" [style.display]="showFor(combatantModifier(0))" class="modifierText">{{combatantModifier(0)}}</text>
+      </g>
+    </g>
   </g>
 
-  <g [style.display]="showFor(!rolls &amp;&amp; !defender)" transform="translate(0 190)">
+  <g [style.display]="showFor(chooseDefender &amp;&amp; (!defender || defender.isDead()))" [attr.transform]="'translate(0 '+(rolls ? 285 : 185)+')'">
     <text x="210" text-anchor="middle" class="instruction">Click the Operative above to battle.</text>
     <text x="15" y="45">The Terrorist must fight each Operative in succession until there</text>
     <text x="15" y="65">is a Combat Break or until all the Operatives are killed.</text>
@@ -57,16 +55,16 @@
       <text x="35" class="equationText"> + {{eval(rolls,'d.m')}} = <tspan class="totalText">{{eval(rolls,'d.t')}}</tspan></text>
    </g>
     <g transform="translate(210 50)">
-      <text [style.display]="showFor(rolls,'l.s&gt;0')" class="result" text-anchor="middle">The {{eval(rolls,'l.c.meepleTitle')}} lost <tspan class="equationInline">{{eval(rolls,'l.d')}}</tspan> strength and is now at <tspan class="strengthInline">{{eval(rolls,'l.s')}}</tspan> strength.</text>
-      <text [style.display]="showFor(rolls,'l.s===0')" class="result" text-anchor="middle">The {{eval(rolls,'l.c.meepleTitle')}} lost <tspan class="equationInline">{{eval(rolls,'l.d')}}</tspan> strength and {{wasWere(eval(rolls,'l.c.meepleTitle'))}} killed.</text>
+      <text [style.display]="showFor(rolls,'l.s&gt;0')" class="result" text-anchor="middle">The {{eval(rolls,'l.c.meepleTitle')}} lost <tspan class="equationInline">{{eval(rolls,'l.d')}}</tspan> strength and {{pluralForm('is',eval(rolls,'l.c.meepleTitle'))}} now at <tspan class="strengthInline">{{eval(rolls,'l.s')}}</tspan> strength.</text>
+      <text [style.display]="showFor(rolls,'l.s===0')" class="result" text-anchor="middle">The {{eval(rolls,'l.c.meepleTitle')}} lost <tspan class="equationInline">{{eval(rolls,'l.d')}}</tspan> strength and {{pluralForm('was',eval(rolls,'l.c.meepleTitle'))}} killed.</text>
       <text [style.display]="showFor(combatBreak)" class="result" text-anchor="middle">The modified rolls are equal, no strength was</text>
       <text y="20" [style.display]="showFor(combatBreak)" class="result" text-anchor="middle">lost by either combatant.</text>
     </g>
   </g>
 
   <g [style.display]="showFor(readyToFight)" transform="translate(15 265)">
-    <text>The {{combatant().meepleTitle}} have strength of <tspan class="strengthInline">{{combatantStrength()}}</tspan> and a modifier of <tspan class="equationInline">+ {{combatantModifier()}}</tspan>.</text>
-    <text y="25">The {{combatant(-1).meepleTitle}} have strength of <tspan class="strengthInline">{{combatantStrength(-1)}}</tspan> and a modifier of <tspan class="equationInline">+ {{combatantModifier(-1)}}</tspan>.</text>
+    <text>The {{combatant().meepleTitle}} {{pluralForm('has',combatant().meepleTitle)}} strength of <tspan class="strengthInline">{{combatantStrength()}}</tspan> and a modifier of <tspan class="equationInline">+ {{combatantModifier()}}</tspan>.</text>
+    <text y="25">The {{combatant(-1).meepleTitle}} {{pluralForm('has',combatant(-1).meepleTitle)}} strength of <tspan class="strengthInline">{{combatantStrength(-1)}}</tspan> and a modifier of <tspan class="equationInline">+ {{combatantModifier(-1)}}</tspan>.</text>
     <text y="50">Each combatant will roll 1 die. The combatant with the lowest</text>
     <text y="70">total (roll + modifier) will suffer strength loss equal to the</text>
     <text y="90">difference between the totals. If the totals are equal, a </text>

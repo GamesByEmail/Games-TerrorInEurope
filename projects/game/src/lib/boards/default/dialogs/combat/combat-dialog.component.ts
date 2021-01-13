@@ -35,10 +35,10 @@ export class CombatDialogComponent {
   chooseDefender: boolean
   constructor(public dialogRef: SvgDialogRef<ICombatDialogResult | undefined>, @Inject(SVG_DIALOG_DATA) public data: ICombatDialogData) {
     this.attacker = this.data.attacker;
-    this.defenders=<any>this.data.defenders.slice()
+    this.defenders = <any>this.data.defenders.slice()
     while (this.defenders.length < 3)
       this.defenders.unshift(undefined);
-    this.tAttack=this.attacker.isTerrorist();
+    this.tAttack = this.attacker.isTerrorist();
     const aRolls = this.attacker.getRolls();
     if (this.tAttack && aRolls)
       this.defender = this.attacker.getDefender(this.defenders);
@@ -79,13 +79,13 @@ export class CombatDialogComponent {
     this.anotherToCombat = this.tAttack && !this.combatBreak && this.defender !== undefined && this.rolls !== undefined && this.rolls.d.s === 0 && this.defenders.find(d => d && d != this.defender && d.isAlive()) !== undefined;
     this.readyToFight = this.defender !== undefined && !this.combatBreak && this.defender.isAlive() && this.attacker.isAlive();
     this.done = !this.attacker.myTurn;
-    this.chooseDefender=!this.defender || (this.defender.isDead() && this.getLiveDefenders().length>0);
-    this.next = !this.readyToFight && !this.done && this.rolls!==undefined;
+    this.chooseDefender = !this.defender || (this.defender.isDead() && this.getLiveDefenders().length > 0);
+    this.next = !this.chooseDefender && !this.readyToFight && !this.done && this.rolls !== undefined;
   }
-  getLiveDefenders(includingCurrent:boolean=true){
+  getLiveDefenders(includingCurrent: boolean = true) {
     if (!this.defender)
-      includingCurrent=true;
-    return this.defenders.filter(d => d && d.isAlive() && (includingCurrent || d!==this.defender));
+      includingCurrent = true;
+    return this.defenders.filter(d => d && d.isAlive() && (includingCurrent || d !== this.defender));
   }
   sortDefenders() {
     this.defenders.sort((a, b) => {
@@ -93,9 +93,9 @@ export class CombatDialogComponent {
         return -1;
       if (!b || b === this.defender)
         return 1;
-      return a.strength - b.strength;
+      return b.strength - a.strength;
     });
-    const liveDefenders=this.getLiveDefenders(false);
+    const liveDefenders = this.getLiveDefenders(false);
     if (!this.defender && liveDefenders.length === 1)
       this.defender = liveDefenders[0];
   }
@@ -129,20 +129,21 @@ export class CombatDialogComponent {
       return "";
     return combatant.meepleId;
   }
-  combatantStyle(defenderIndex?: number) {
+  combatantClass(defenderIndex: number) {
     const combatant = this.combatant(defenderIndex);
-    if (!combatant || combatant === this.attacker)
+    if (!combatant || combatant === this.defender)
       return "";
-    let style = "";
-    if (!this.rolls && combatant.isAlive() && combatant !== this.defender)
-      style += "cursor:pointer;";
+    let classes="otherCombatant";
+    if (this.chooseDefender && combatant.isAlive())
+      classes+=" selectableCombatant";
+    return classes;
+  }
+  combatantTransform(x:number,defenderIndex: number) {
+    const combatant = this.combatant(defenderIndex);
+    if (!combatant)
+      return "";
     const offset = combatant === this.defender ? -15 : 0;
-    style += "transform:";
-    style += "translate(" + ((2 - defenderIndex!) * 20 + offset) + "px, 0) ";
-    if (combatant !== this.defender)
-      style += "scale(0.7) ";
-    style += ";";
-    return style;
+    return "translate(" + (x+(2 - defenderIndex!) * 20 + offset) + " 0)";
   }
   dieHref(index: 'a' | 'd') {
     if (!this.rolls)
@@ -164,8 +165,9 @@ export class CombatDialogComponent {
   }
   defenderClick(defenderIndex: number) {
     const combatant = this.combatant(defenderIndex);
-    if (combatant && !this.combatBreak && !this.rolls && combatant.isAlive()) {
+    if (combatant && combatant.isAlive() && this.chooseDefender) {
       this.defender = combatant;
+      this.rolls = undefined;
       this.sortDefenders();
       this.readyToFight = true;
     }
@@ -196,7 +198,15 @@ export class CombatDialogComponent {
   posessive(value: string) {
     return value + (value.endsWith("s") ? "'" : "'s");
   }
-  wasWere(value: string) {
-    return value.endsWith("s") ? "were" : "was";
+  pluralForm(word: string, test?: string | number) {
+    if (typeof (test) === "number")
+      return word + (test === 1 ? "" : "s");
+    if (test && test.endsWith('s'))
+      switch (word) {
+        case 'is': return 'are';
+        case 'was': return 'were';
+        case 'has': return 'have';
+      }
+    return word;
   }
 }

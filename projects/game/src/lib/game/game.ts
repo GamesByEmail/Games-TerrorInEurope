@@ -70,7 +70,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
                 }
               else {
                 const operatives = turnTeam.city.findOperatives();
-                if (operatives.filter(o => o.isAlive()).length > 0)
+                if (turnTeam.hasRolls() || operatives.filter(o => o.isAlive()).length > 0)
                   this.resolveCombat(turnTeam, operatives);
                 else
                   this.beginMeepleMove(turnTeam);
@@ -114,7 +114,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
             this.board.openCombat(attacker, defenders, () => attacker.city.mapData.location)
               .subscribe(() => this.modalOpen.next(false));
           }
-          this.saveIt(opponent);
+          this.saveIt(attacker);
         } else
           this.beginMeepleMove(attacker);
       });
@@ -165,17 +165,20 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   }
   moveHere(city: Territory, tokenType?: ETokenType) {
     const turnTeam = this.findTurnTeam()!;
-    if (turnTeam.isTerrorist() && tokenType) {
-      const token = createToken(this.board.game, tokenType);
+    if (turnTeam.isTerrorist()) {
+      const token = createToken(this.board.game, tokenType || ETokenType.MARKER);
       token.changeTerritory(city);
     }
     if (city===turnTeam.city)
       turnTeam.setStrength(100);
     else
       turnTeam.city = city;
-    if (turnTeam.isOperative() || (turnTeam.isTerrorist() && !city.hasOperative(true)))
+    if (turnTeam.isTerrorist() && city.hasOperative(true))
+      this.resolveCombat(turnTeam, city.findOperatives());
+    else {
       this.incrementTurn();
-    this.saveIt(turnTeam);
+      this.saveIt(turnTeam);
+    }
   }
   getAllTokens() {
     const tokens: Token[] = [];

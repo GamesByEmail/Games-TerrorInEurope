@@ -17,3 +17,22 @@
 .button:active:hover > * {
   transform: translate(1px, 1px);
 }
+.stengthText {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 28px;
+  font-weight: bold;
+  stroke: none;
+  fill: rgb(205,0,0);
+  dominant-baseline: middle;
+  text-anchor: end;
+  stroke: none;
+  pointer-events: none;
+}
+.strengthInline {
+  font-weight: bold;
+  fill: rgb(205,0,0);
+}
+.equationInline {
+  font-weight: bold;
+  fill: rgb(0,0,0);
+}

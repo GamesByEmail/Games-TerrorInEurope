@@ -17,7 +17,7 @@ export class Bomb extends Token {
   worked(numDice: number, operative?: Team) {
     this.visibility = ETokenVisibility.VISIBLE;
     const terrorist = this.game.findTeam(TeamId.Terrorist);
-    const dice = (operative || terrorist).rollDice(numDice);
+    const dice = (operative || this.game.findTeam(TeamId.InformantNetwork)).rollDice(numDice);
     const roll = Math.min(...dice);
     if (roll <= 3)
       this.result = ETokenResult.LOST;

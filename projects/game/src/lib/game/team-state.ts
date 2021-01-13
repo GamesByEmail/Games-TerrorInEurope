@@ -11,6 +11,7 @@ export interface IInfoState {
   $T?: boolean // turn=false
   $P?: boolean // playing=true
   a: number // aged move number
+  r?: number[] //rolls
 }
 
 export type LTokenType = "t" | "b" | "r" | "m" | "u";

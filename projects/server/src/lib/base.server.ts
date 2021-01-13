@@ -1,4 +1,3 @@
-
 export interface IBaseTeamState {
   $T?: boolean // myTurn, should default to false.
   $P?: boolean // playing, should default to true.
@@ -24,6 +23,10 @@ export abstract class BaseServer<IGameState extends IBaseGameState> {
   clearTurns(state: IGameState) {
     state.teams.forEach(team => delete team.$T);
   }
+  setTurn(state: IGameState, team: IBaseTeamState) {
+    state.teams.forEach(team => delete team.$T);
+    team.$T = true;
+  }
   updateWhoWeAre() {
     for (let i = 0; i < this.state.teams.length; i++)
       this.game.teams[i].uuid = this.state.teams[i].$T ? "ASDFASDFASDF" : undefined;
@@ -32,16 +35,23 @@ export abstract class BaseServer<IGameState extends IBaseGameState> {
     const oldState = this.state;
     this.state = JSON.parse(JSON.stringify(state));
     if (oldState)
-      for (let i = 0; i < state.teams.length; i++)
+      for (let i = 0; i < state.teams.length; i++) {
+        const newTeamState = this.state.teams[i];
+        if (!newTeamState.$T)
+          delete newTeamState.$T;
+        if (newTeamState.$P)
+          delete newTeamState.$P;
         if (this.game.teams[i] !== team) {
           const oldTeamState = oldState.teams[i];
           if (!oldTeamState || oldTeamState.$_ === undefined)
-            delete this.state.teams[i].$_;
+            delete newTeamState.$_;
           else
-            this.state.teams[i].$_ = oldTeamState.$_;
+            newTeamState.$_ = oldTeamState.$_;
         }
+      }
     this.move(this.state, oldState);
     this.updateWhoWeAre();
+    //console.log("\r\n"+JSON.stringify(this.state)+"\r\n");
     navigator.clipboard.writeText("\r\nreturn this.game.server.init(" + JSON.stringify(this.state, null, 2) + ");\r\n");
   }
   getState() {
