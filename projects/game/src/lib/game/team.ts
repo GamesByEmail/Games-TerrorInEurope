@@ -79,14 +79,12 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
   }
   getState(): ITeamState {
     let state;
-    if (this.isSecretAgents() || this.isBombSquad() || this.isSpecialForces()) {
+    if (this.isSecretAgents() || this.isBombSquad() || this.isSpecialForces())
       state = {
         c: this.city ? this.city.index : -1,
         s: this.strength
       } as IOpsState;
-      if (this.rolls.length > 0)
-        state.r = this.rolls.slice();
-    } else if (this.isInformantNetwork())
+    else if (this.isInformantNetwork())
       state = {
         a: this.agedMoveNumber
       } as IInfoState;
@@ -95,8 +93,6 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
         v: this.viktoryPoints,
         s: this.strength
       } as ITerrState;
-      if (this.rolls.length > 0)
-        state.r = this.rolls.slice();
       const pubTokens = this.getTokenStates(false);
       if (pubTokens && pubTokens.length > 0)
         state.t = pubTokens;
@@ -106,6 +102,8 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
           t: this.getTokenStates(true)
         };
     }
+    if (this.rolls.length > 0)
+      state.r = this.rolls.slice();
     state.$T = this.myTurn;
     state.$P = this.playing;
     return state;
