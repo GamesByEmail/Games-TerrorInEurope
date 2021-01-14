@@ -1,3 +1,5 @@
+import { ReplaySubject } from "rxjs";
+
 export interface IBaseTeamState {
   $T?: boolean // myTurn, should default to false.
   $P?: boolean // playing, should default to true.
@@ -5,38 +7,63 @@ export interface IBaseTeamState {
 }
 export interface IBaseGameState {
   moveNumber: number
-  teams: IBaseTeamState[];
+  teams: IBaseTeamState[]
 }
 export interface IBaseTeam {
-  uuid?: string;
+  uuid?: string
 }
+export interface IBaseStateGame {
+  setState:(state:any)=>any
+  abandonState:()=>any
+  teams:IBaseTeam[]
+}
+export abstract class BaseServer<IGame extends IBaseStateGame,IGameState extends IBaseGameState> {
 
-export abstract class BaseServer<IGameState extends IBaseGameState> {
-  state!: IGameState;
-  constructor(private game: any) { }
+  private _history = new ReplaySubject<IGameState>()
+  public history = this._history.asObservable();
+  constructor(private game: IGame) { }
 
-  init<T extends IGameState>(state: T) {
-    this.state = JSON.parse(JSON.stringify(state));
-    this.updateWhoWeAre();
+  public init(state: IGameState) {
+    this.pushState(this.cloneState(state));
     this.game.setState(this.getState());
   }
-  clearTurns(state: IGameState) {
+  public goToMove(moveNumber: number, teamIndex: number) {
+    this.setTeamIsUs(teamIndex);
+    this.game.abandonState();
+    this.game.setState(this.getState(moveNumber));
+  }
+  protected cloneState(state: IGameState) {
+    return JSON.parse(JSON.stringify(state))
+  }
+  protected current(moveNumber?:number) {
+    const buffer:IGameState[]=((<any>this._history)._events) || ((<any>this._history).buffer);
+    return this.cloneState(typeof(moveNumber)==="number" ? buffer.find(state=>state.moveNumber===moveNumber)! : buffer[buffer.length-1] );
+  }
+  protected clearTurns(state: IGameState) {
     state.teams.forEach(team => delete team.$T);
   }
-  setTurn(state: IGameState, team: IBaseTeamState) {
+  protected setTurn(state: IGameState, team: IBaseTeamState) {
     state.teams.forEach(team => delete team.$T);
     team.$T = true;
   }
-  updateWhoWeAre() {
-    for (let i = 0; i < this.state.teams.length; i++)
-      this.game.teams[i].uuid = this.state.teams[i].$T ? "ASDFASDFASDF" : undefined;
+  private setTeamIsUs(using: IGameState | number) {
+    if (typeof (using) === "number")
+      for (let i = 0; i < this.game.teams.length; i++)
+        this.game.teams[i].uuid = i === using ? "ASDFASDFASDF" : undefined;
+    else
+      for (let i = 0; i < using.teams.length; i++)
+        this.game.teams[i].uuid = using.teams[i].$T ? "ASDFASDFASDF" : undefined;
   }
-  setState(state: IGameState, team: IBaseTeam) {
-    const oldState = this.state;
-    this.state = JSON.parse(JSON.stringify(state));
+  protected pushState(state: IGameState) {
+    this._history.next(state);
+    this.setTeamIsUs(state);
+  }
+  public setState(state: IGameState, team: IBaseTeam) {
+    const oldState = this.current();
+    const newState = this.cloneState(state);
     if (oldState)
       for (let i = 0; i < state.teams.length; i++) {
-        const newTeamState = this.state.teams[i];
+        const newTeamState = newState.teams[i];
         if (!newTeamState.$T)
           delete newTeamState.$T;
         if (newTeamState.$P)
@@ -49,13 +76,11 @@ export abstract class BaseServer<IGameState extends IBaseGameState> {
             newTeamState.$_ = oldTeamState.$_;
         }
       }
-    this.move(this.state, oldState);
-    this.updateWhoWeAre();
-    //console.log("\r\n"+JSON.stringify(this.state)+"\r\n");
-    navigator.clipboard.writeText("\r\nreturn this.game.server.init(" + JSON.stringify(this.state, null, 2) + ");\r\n");
+    this.move(newState, oldState);
+    this.pushState(newState);
   }
-  getState() {
-    const state = JSON.parse(JSON.stringify(this.state));
+  public getState(moveNumber?:number) {
+    const state = this.current(moveNumber);
     for (let i = 0; i < state.teams.length; i++) {
       const team = this.game.teams[i];
       if (!team || !team.uuid)
@@ -63,5 +88,5 @@ export abstract class BaseServer<IGameState extends IBaseGameState> {
     }
     return state;
   }
-  abstract move(state: IGameState, oldState: IGameState): void
+  protected abstract move(state: IGameState, oldState: IGameState): void
 }

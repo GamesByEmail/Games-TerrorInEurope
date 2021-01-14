@@ -6,7 +6,7 @@ import { BoardService } from '@gamesbyemail/base';
 import { Territory } from '../../../game/territory';
 import { Game } from '../../../game/game';
 import { fromEvent, Subscription, Observable, Subject, race } from 'rxjs';
-import { switchMap, map, takeUntil } from 'rxjs/operators';
+import { switchMap, map, takeUntil, finalize } from 'rxjs/operators';
 import { Point2D, Rectangle2D } from '@packageforge/geometry2d';
 import { Piece } from '../../../game/piece';
 import { cityMapData, IMapPoint } from './city-map-data';
@@ -117,13 +117,13 @@ export class BoardComponent implements AfterViewInit {
     const point = pointFnc();
     this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
     let ref = this.covertOpsDialogService.open(this.dialogArea, { operative: operative, token: token }, this.dialogOverlay);
-    return ref.afterClosed();//.pipe(finalize(()=>console.log("closezit:"+ref.close())));
+    return ref.afterClosed().pipe(finalize(()=>console.log("closezit:"+ref.close())));
   }
   openCombat(attacker: Team, defenders: Team[], pointFnc: () => IMapPoint) {
     const point = pointFnc();
     this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
     let ref = this.combatDialogService.open(this.dialogArea, { attacker: attacker, defenders: defenders }, this.dialogOverlay);
-    return ref.afterClosed();//.pipe(finalize(()=>console.log("closezit:"+ref.close())));
+    return ref.afterClosed().pipe(finalize(()=>console.log("closezit:"+ref.close())));
   }
   tokenClass(token: Token) {
     return { aged: token.result === ETokenResult.AGED, won: token.result === ETokenResult.WON, lost: token.result === ETokenResult.LOST };

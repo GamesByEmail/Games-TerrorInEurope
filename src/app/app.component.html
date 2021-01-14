@@ -1,13 +1,1 @@
-<gamesbyemail-base-test [game-name]="'Chess'" [play]="play" [start-game]="startGame" [join-game]="joinGame" [rules]="rules"></gamesbyemail-base-test>
-<ng-template #play>
-  <gamesbyemail-games-terrorInEurope-play style="display:inline-block;width:800px"></gamesbyemail-games-terrorInEurope-play>
-</ng-template>
-<ng-template #startGame>
-  <gamesbyemail-games-terrorInEurope-startgame [me]="me"></gamesbyemail-games-terrorInEurope-startgame>
-</ng-template>
-<ng-template #joinGame>
-  <gamesbyemail-games-terrorInEurope-joingame [me]="me" [game]="game"></gamesbyemail-games-terrorInEurope-joingame>
-</ng-template>
-<ng-template #rules>
-  <gamesbyemail-games-terrorInEurope-rules></gamesbyemail-games-terrorInEurope-rules>
-</ng-template>
+<router-outlet></router-outlet>

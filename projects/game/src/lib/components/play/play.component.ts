@@ -40,7 +40,7 @@ export class PlayComponent implements OnInit {
       ]
     };
     this.game.setGameData(gameData);
-    return;
+    //return;
 
     return this.game.server.init({"moveNumber":14,"teams":[{"c":7,"s":6,"$T":true},{"c":7,"s":6},{"c":7,"s":6},{"a":13},{"v":0,"s":12,"$_":{"c":6,"t":[{"c":6,"t":"r","a":0,"v":0,"r":0},{"c":8,"t":"t","a":2,"v":0,"r":0},{"c":9,"t":"b","a":1,"v":0,"r":0}]}}],"moves":[]});
     

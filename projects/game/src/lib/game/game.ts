@@ -1,5 +1,5 @@
-import { BehaviorSubject } from 'rxjs';
-import { filter, take } from 'rxjs/operators';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { filter, take, takeUntil } from 'rxjs/operators';
 import { BaseGame, IBaseGameSave, IBaseGameState } from '@gamesbyemail/base';
 import { Board, IBoardSave } from './board';
 import { Team, ITeamSave } from './team';
@@ -32,10 +32,16 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   }
   header: string = "";
 
+  private stateAbandon = new Subject();
+  abandonState(){
+    this.stateAbandon.next(true);
+    this.modalOpen.next(false);
+  }
   private modalOpen = new BehaviorSubject<boolean>(false);
   public setState(state: IGameState) {
     this.modalOpen
       .pipe(filter(open => !open), take(1))
+      .pipe(takeUntil(this.stateAbandon))
       .subscribe(o => {
         this._moveNumber = -1;
         this.board.clear();
@@ -83,6 +89,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   resolveCovertOps(turnTeam: Team, token: CovertOpToken) {
     this.modalOpen.next(true);
     this.board.openCovertOps(turnTeam, token, () => turnTeam.city.mapData.location)
+      .pipe(takeUntil(this.stateAbandon))
       .subscribe(() => {
         this.modalOpen.next(false);
         this.clearRolls();
@@ -93,7 +100,8 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
             this.incrementTurn();
             this.modalOpen.next(true);
             this.board.openCovertOps(turnTeam, token, () => turnTeam.city.mapData.location)
-              .subscribe(() => this.modalOpen.next(false));
+            .pipe(takeUntil(this.stateAbandon))
+            .subscribe(() => this.modalOpen.next(false));
           }
           this.saveIt(turnTeam);
         } else {
@@ -104,7 +112,8 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   resolveCombat(attacker: Team, defenders: Team[]) {
     this.modalOpen.next(true);
     this.board.openCombat(attacker, defenders, () => attacker.city.mapData.location)
-      .subscribe(opponent => {
+    .pipe(takeUntil(this.stateAbandon))
+    .subscribe(opponent => {
         this.modalOpen.next(false);
         this.clearRolls();
         if (opponent) {
@@ -112,7 +121,8 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
             this.incrementTurn();
             this.modalOpen.next(true);
             this.board.openCombat(attacker, defenders, () => attacker.city.mapData.location)
-              .subscribe(() => this.modalOpen.next(false));
+            .pipe(takeUntil(this.stateAbandon))
+            .subscribe(() => this.modalOpen.next(false));
           }
           this.saveIt(attacker);
         } else

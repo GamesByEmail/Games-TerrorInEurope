@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+:host(.inactive) {
+  background-color: #cccccc;
+}
+.state {
+  border:1px solid black;
+  padding: 2px;
+  margin:2px;
+  overflow: hidden;
+  user-select: select auto;  
+}
+.team {
+  font:12px consolas;
+}
+.team.turn {
+  background-color: rgb(128,255,128);
+}
+.team.notPlaying {
+  background-color: rgb(255,198,198);
+}

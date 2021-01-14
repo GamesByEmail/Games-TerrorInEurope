@@ -9,10 +9,14 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { TestModule } from '@gamesbyemail/base';
 
 import { StartGameModule, JoinGameModule, RulesModule, PlayModule } from '../../projects/game/src/public-api';
+import { DevelopmentComponent } from './development/development.component';
+import { StateBrowserComponent } from './state-browser/state-browser.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    DevelopmentComponent,
+    StateBrowserComponent
   ],
   imports: [
     BrowserModule,

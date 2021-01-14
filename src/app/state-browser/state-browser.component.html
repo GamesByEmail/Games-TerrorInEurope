@@ -1,0 +1,10 @@
+<div class="team">init</div>
+<table *ngFor="let state of states, index as i">
+<tr><td valign=top>
+  <input type=button [value]="open[i] ? '-' : '+'" (click)="open[i]=!open[i]">
+</td><td>
+  <pre class="state" [ngClass]="{open:open[i]}" onfocus="this.select()">{{toJson(state,open[i])}}</pre>
+  <input type=button *ngFor="let team of teamTitles, index as i" [value]="team" [class]="teamClass(i,state)" (click)="goToMove(state.moveNumber,i)"/>
+</td>
+</tr>
+</table>

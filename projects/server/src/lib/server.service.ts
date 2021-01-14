@@ -1,9 +1,9 @@
 import { BaseServer } from "./base.server";
 import { ETokenType, ETokenVisibility, IOpsState, ITerrState, ITokenState } from "projects/game/src/lib/game/team-state";
-import { IGameState } from "projects/game/src/lib/game/game";
+import { Game, IGameState } from "projects/game/src/lib/game/game";
 
-export class ServerService extends BaseServer<IGameState> {
-  move(state: IGameState, oldState: IGameState) {
+export class ServerService extends BaseServer<Game, IGameState> {
+  protected move(state: IGameState, oldState: IGameState) {
     if (!oldState)
       return;
     if (oldState.teams[3].$T && state.teams[4].$T) {
@@ -40,12 +40,12 @@ export class ServerService extends BaseServer<IGameState> {
           if (justMovedHere && this.revealTokens(tState, newOpsState.c, true) > 0)
             this.setTurn(state, newOpsState);
         }
-        if (typeof(tState.c)!=="number" && tState.t && tState.t.find(t=>t.t==="m" && t.a===0))
-          tState.c=tState.$_.c;
+        if (typeof (tState.c) !== "number" && tState.t && tState.t.find(t => t.t === "m" && t.a === 0))
+          tState.c = tState.$_.c;
       }
     }
   }
-  ageTokens(tState: ITerrState) {
+  private ageTokens(tState: ITerrState) {
     const vTokens = this.ageTokensList(tState.$_!.t, 2)
     if (!tState.t)
       tState.t = [];
@@ -53,20 +53,20 @@ export class ServerService extends BaseServer<IGameState> {
     tState.t = tState.t.filter(t => vTokens.find(v => t.c === v.c));
     tState.t.push(...vTokens);
   }
-  ageTokensList(tokens: ITokenState[], maxAge: number) {
+  private ageTokensList(tokens: ITokenState[], maxAge: number) {
     const agedOut: ITokenState[] = [];
     for (let i = 0; i < tokens.length; i++)
       if ((++tokens[i].a) > maxAge)
         agedOut.push(tokens.splice(i--, 1)[0]);
     return agedOut;
   }
-  justMovedHere(nState: IOpsState, oState: IOpsState) {
+  private justMovedHere(nState: IOpsState, oState: IOpsState) {
     return oState.$T && nState.c !== oState.c;
   }
-  justRevivedHere(nState: IOpsState, oState: IOpsState) {
+  private justRevivedHere(nState: IOpsState, oState: IOpsState) {
     return oState.$T && nState.c === oState.c && oState.s === 0 && nState.s > 0;
   }
-  revealTokens(tState: ITerrState, c: number, fullReveal: boolean) {
+  private revealTokens(tState: ITerrState, c: number, fullReveal: boolean) {
     let count = 0;
     if (tState.$_) {
       const priTokens = tState.$_.t;
