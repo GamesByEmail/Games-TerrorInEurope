@@ -11,12 +11,14 @@ import { TestModule } from '@gamesbyemail/base';
 import { StartGameModule, JoinGameModule, RulesModule, PlayModule } from '../../projects/game/src/public-api';
 import { DevelopmentComponent } from './development/development.component';
 import { StateBrowserComponent } from './state-browser/state-browser.component';
+import { TestGameComponent } from './test-game/test-game.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     DevelopmentComponent,
-    StateBrowserComponent
+    StateBrowserComponent,
+    TestGameComponent
   ],
   imports: [
     BrowserModule,

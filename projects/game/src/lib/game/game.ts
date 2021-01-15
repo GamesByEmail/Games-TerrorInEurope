@@ -10,6 +10,7 @@ import { CovertOpToken, Token } from './pieces/token/token';
 import { ServerService } from 'projects/server/src/public-api';
 import { ETokenType, IInfoState, IOpsState, ITeamState, ITerrState } from './team-state';
 import { createToken } from './pieces/token/create-token';
+import { annotateGameState } from './state-annotation';
 
 export interface IGameOptions {
   dark?: boolean;
@@ -33,7 +34,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   header: string = "";
 
   private stateAbandon = new Subject();
-  abandonState(){
+  abandonState() {
     this.stateAbandon.next(true);
     this.modalOpen.next(false);
   }
@@ -57,7 +58,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
                 if (turnTeam.isDead())
                   this.beginMeepleMove(turnTeam);
                 else {
-                  const token = turnTeam.city.findToken<CovertOpToken>(undefined, undefined, false);
+                  const token = turnTeam.city.findCovertOpsToken(false);
                   if (token)
                     this.resolveCovertOps(turnTeam, token);
                   else {
@@ -66,7 +67,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
                       if (terrorist && terrorist.hasRolls())
                         this.resolveCombat(turnTeam, [terrorist]);
                       else
-                        this.resolveCovertOps(turnTeam, turnTeam.city.findToken<CovertOpToken>()!);
+                        this.resolveCovertOps(turnTeam, turnTeam.city.findCovertOpsToken()!);
                     else
                       if (terrorist)
                         this.resolveCombat(turnTeam, [terrorist]);
@@ -100,8 +101,8 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
             this.incrementTurn();
             this.modalOpen.next(true);
             this.board.openCovertOps(turnTeam, token, () => turnTeam.city.mapData.location)
-            .pipe(takeUntil(this.stateAbandon))
-            .subscribe(() => this.modalOpen.next(false));
+              .pipe(takeUntil(this.stateAbandon))
+              .subscribe(() => this.modalOpen.next(false));
           }
           this.saveIt(turnTeam);
         } else {
@@ -112,8 +113,8 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   resolveCombat(attacker: Team, defenders: Team[]) {
     this.modalOpen.next(true);
     this.board.openCombat(attacker, defenders, () => attacker.city.mapData.location)
-    .pipe(takeUntil(this.stateAbandon))
-    .subscribe(opponent => {
+      .pipe(takeUntil(this.stateAbandon))
+      .subscribe(opponent => {
         this.modalOpen.next(false);
         this.clearRolls();
         if (opponent) {
@@ -121,8 +122,8 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
             this.incrementTurn();
             this.modalOpen.next(true);
             this.board.openCombat(attacker, defenders, () => attacker.city.mapData.location)
-            .pipe(takeUntil(this.stateAbandon))
-            .subscribe(() => this.modalOpen.next(false));
+              .pipe(takeUntil(this.stateAbandon))
+              .subscribe(() => this.modalOpen.next(false));
           }
           this.saveIt(attacker);
         } else
@@ -179,7 +180,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
       const token = createToken(this.board.game, tokenType || ETokenType.MARKER);
       token.changeTerritory(city);
     }
-    if (city===turnTeam.city)
+    if (city === turnTeam.city)
       turnTeam.setStrength(100);
     else
       turnTeam.city = city;
@@ -236,5 +237,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   getOperatives() {
     return this.teams.filter(team => team.isOperative());
   }
-
+  annotateState(gameState: IGameState) {
+    return annotateGameState(this,gameState);
+  }
 }

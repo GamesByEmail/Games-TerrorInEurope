@@ -6,7 +6,7 @@ import { TeamId } from './team-id';
 import { Move, IModMove } from './move';
 import { Piece } from './piece';
 import { ICityMapData } from '../boards/default/board/city-map-data';
-import { Token } from './pieces/token/token';
+import { CovertOpToken, Token } from './pieces/token/token';
 import { ETokenResult, ETokenType, ETokenVisibility, ITeamState } from './team-state';
 
 export interface ITerritorySave extends IBaseTerritorySave<Game, IGameOptions, IGameState, IGameSave, Board, undefined, IBoardSave, Territory, undefined, ITerritorySave, Team, TeamId, ITeamState, ITeamSave, Move, IModMove> {
@@ -75,7 +75,7 @@ export class Territory extends BaseMapTerritory<Game, IGameOptions, IGameState, 
     this.canSelect = false;
     this.showTokenSelect = false;
   }
-  setState(state:undefined) {
+  setState(state: undefined) {
     return undefined;
   }
   getState() {
@@ -153,18 +153,14 @@ export class Territory extends BaseMapTerritory<Game, IGameOptions, IGameState, 
   hasTerrorist() {
     return this.findTerrorist() !== undefined;
   }
-  findToken<T extends Token = Token>(expired?: boolean, revealed?: boolean, result?: boolean) {
-    for (let i = 0; i < this.pieces.length; i++) {
-      const piece = this.pieces[i];
-      if (piece instanceof Token &&
-        (expired === undefined || (expired === piece.hasExpired())) &&
-        (revealed === undefined || (revealed === (piece.visibility !== ETokenVisibility.VISIBLE))) &&
-        (result === undefined || (result === (piece.result !== ETokenResult.UNDEFINED))
-        )
-      )
-        return piece as T;
-    }
-    return;
+  findTokens() {
+    return this.pieces.filter((piece): piece is Token => piece instanceof Token);
+  }
+  findUnexpiredToken() {
+    return this.findTokens().find(token => !token.hasExpired());
+  }
+  findCovertOpsToken(resolved?: boolean) {
+    return this.findTokens().find((token): token is CovertOpToken => token.isCovertOps() && (typeof (resolved) !== "boolean" || resolved === (token.result !== ETokenResult.UNDEFINED)));
   }
   looksOccupied() {
     for (let i = 0; i < this.pieces.length; i++)

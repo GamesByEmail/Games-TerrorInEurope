@@ -9,7 +9,10 @@ export class Trap extends Token {
   svgId() {
     return "#Trap";
   }
-  aged() {
+  isCovertOps(){
+    return true;
+  }
+ aged() {
     this.visibility = ETokenVisibility.VISIBLE;
     if (!this.result)
       this.worked(1);

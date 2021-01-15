@@ -1,8 +1,23 @@
 import { BaseServer } from "./base.server";
 import { ETokenType, ETokenVisibility, IOpsState, ITerrState, ITokenState } from "projects/game/src/lib/game/team-state";
-import { Game, IGameState } from "projects/game/src/lib/game/game";
+import { Game, IGameOptions, IGameState } from "projects/game/src/lib/game/game";
+import { IGameData } from "@gamesbyemail/base";
+import { TeamId } from "projects/game/src/lib/game/team-id";
 
 export class ServerService extends BaseServer<Game, IGameState> {
+  protected buildInitialState(gameData: IGameData<IGameOptions, IGameState, TeamId>): IGameState {
+    return {
+      moveNumber: 0,
+      teams: [
+        { $T: true, c: -1, s: 6 },
+        { c: -1, s: 6 },
+        { c: -1, s: 6 },
+        { a: 0 },
+        { v: 0, s: 12 }
+      ],
+      moves: []
+    };
+  }
   protected move(state: IGameState, oldState: IGameState) {
     if (!oldState)
       return;

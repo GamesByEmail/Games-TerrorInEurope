@@ -9,6 +9,9 @@ export class Recruit extends Token {
   svgId() {
     return "#Recruit";
   }
+  isCovertOps(){
+    return true;
+  }
   aged() {
     this.visibility = ETokenVisibility.VISIBLE;
     if (!this.result)

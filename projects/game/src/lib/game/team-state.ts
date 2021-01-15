@@ -14,11 +14,11 @@ export interface IInfoState {
   r?: number[] //rolls
 }
 
-export type LTokenType = "t" | "b" | "r" | "m" | "u";
+export type LTokenType = "b" | "r" | "t" | "m" | "u";
 export enum ETokenType {
-  TRAP = "t",
   BOMB = "b",
   RECRUIT = "r",
+  TRAP = "t",
   MARKER = "m",
   UNKNOWN = "u"
 }

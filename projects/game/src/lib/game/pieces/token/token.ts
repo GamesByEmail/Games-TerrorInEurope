@@ -48,4 +48,7 @@ export abstract class Token extends Piece {
   hasExpired() {
     return this.age > 2;
   }
+  isCovertOps(){
+    return false;
+  }
 }

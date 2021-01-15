@@ -9,6 +9,9 @@ export class Bomb extends Token {
   svgId() {
     return "#Bomb";
   }
+  isCovertOps(){
+    return true;
+  }
   aged() {
     this.visibility = ETokenVisibility.VISIBLE;
     if (!this.result)

@@ -256,7 +256,7 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
     if (!this.city)
       return this.game.board.territories;
     if (this.isTerrorist())
-      return this.city.allInRange(1, 2, 1, 1).filter(c => !c.findToken(false));
+      return this.city.allInRange(1, 2, 1, 1).filter(c => !c.findUnexpiredToken());
     if (this.isDead())
       return [this.city];
     let range;

@@ -1,13 +1,13 @@
-<gamesbyemail-base-test [game-name]="'Chess'" [play]="play" [start-game]="startGame" [join-game]="joinGame" [rules]="rules"></gamesbyemail-base-test>
+<gamesbyemail-base-test [game-name]="'Terror In Europe'" [play]="play" [start-game]="startGame" [join-game]="joinGame" [rules]="rules"></gamesbyemail-base-test>
 <ng-template #play>
-  <input type=button class="statebrowser" value="State Browser" (click)="openStateBrowser()"/>
-  <gamesbyemail-games-terrorInEurope-play #game style="display:inline-block;width:800px"></gamesbyemail-games-terrorInEurope-play>
+  <gamesbyemail-base-testgame [service]="testGameService" style="position: absolute;"></gamesbyemail-base-testgame>
+  <gamesbyemail-games-terrorInEurope-play #game [game]="testGame" style="display:inline-block;width:800px"></gamesbyemail-games-terrorInEurope-play>
 </ng-template>
 <ng-template #startGame>
   <gamesbyemail-games-terrorInEurope-startgame [me]="me"></gamesbyemail-games-terrorInEurope-startgame>
 </ng-template>
 <ng-template #joinGame>
-  <gamesbyemail-games-terrorInEurope-joingame [me]="me" [game]="game"></gamesbyemail-games-terrorInEurope-joingame>
+  <gamesbyemail-games-terrorInEurope-joingame [me]="me" [game]="testJoingame"></gamesbyemail-games-terrorInEurope-joingame>
 </ng-template>
 <ng-template #rules>
   <gamesbyemail-games-terrorInEurope-rules></gamesbyemail-games-terrorInEurope-rules>
