@@ -38,6 +38,7 @@ export abstract class BaseServer<IGame extends IBaseStateGame<any, any, any>, IG
       this.stateBuffer.length = index;
   }
   public playTest(gameData: IGameData<any, IGameState, any>) {
+    this.game.abandonState();
     if (gameData.states.length === 0)
       gameData = this.initialize(gameData);
     this.stateBuffer=gameData.states.map(state => this.cloneState(state));
@@ -45,8 +46,8 @@ export abstract class BaseServer<IGame extends IBaseStateGame<any, any, any>, IG
     this.game.setGameData(gameData);
   }
   public goToMove(moveNumber: number, teamIndex: number) {
-    this.setTeamIsUs(teamIndex);
     this.game.abandonState();
+    this.setTeamIsUs(teamIndex);
     this.game.setState(this.getState(moveNumber));
   }
   protected cloneState(state: IGameState) {

@@ -1,1 +1,4 @@
-<input type=button value="State Browser" (click)="service.openStateBrowser()"/><input type=button value="Reset" (click)="service.reset()"/>
+<input type=button value="State Browser" (click)="service.openStateBrowser()"/>
+<input type=button #export value="Export" (click)="doExport(export)"/>
+<input type=button #import value="Import" (click)="doImport(import)"/>
+<input type=button value="Reset" (click)="service.reset()" style="margin-left:10px"/>

@@ -1,4 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnDestroy } from '@angular/core';
+import { Subject, timer } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { TestGameService } from './test-game.service';
 
 @Component({
@@ -6,6 +8,27 @@ import { TestGameService } from './test-game.service';
   templateUrl: './test-game.component.html',
   styleUrls: ['./test-game.component.css']
 })
-export class TestGameComponent {
-  @Input("service") service!:TestGameService
+export class TestGameComponent implements OnDestroy {
+  unsub = new Subject();
+  @Input("service") service!: TestGameService
+  ngOnDestroy(): void {
+    this.unsub.next();
+    this.unsub.complete();
+  }
+  tempChangeTitle(button: HTMLInputElement, tempTitle: string, origTitle: string) {
+    console.log(button);
+    button.value = tempTitle;
+    timer(1000).pipe(takeUntil(this.unsub)).subscribe(() => button.value = origTitle);
+  }
+  doExport(button: HTMLInputElement) {
+    window.navigator.clipboard.writeText(this.service.export());
+    this.tempChangeTitle(button, "Exported to Clipboard","Export");
+  }
+  doImport(button: HTMLInputElement) {
+    const result = window.prompt("Paste game data here:", "");
+    if (result) {
+      this.service.import(result);
+      this.tempChangeTitle(button, "Imported","Import");
+    }
+  }
 }

@@ -1,5 +1,6 @@
 import { NgZone } from '@angular/core';
 import { IGameData } from '@gamesbyemail/base';
+import { annotate, annotatedJson, parseJson } from '@packageforge/annotated-json';
 import { fromEvent, merge, NEVER, Observable, ReplaySubject, Subject } from 'rxjs';
 import { filter, finalize, ignoreElements, mergeMap, tap } from 'rxjs/operators';
 
@@ -15,22 +16,22 @@ interface IStateGame {
 }
 
 export class TestGameService {
-  private index
   private localStorageKey
   private resetting
-  private annotations: any[][] = [];
-  constructor(private _ngZone: NgZone, private sbUrl: string, private game: IStateGame, private gameData: IGameData<any, any, any>[], private jsonIndent = 2) {
+  private annotations: any[] = [];
+  constructor(
+    private _ngZone: NgZone,
+    private sbUrl: string,
+    private game: IStateGame,
+    private gameData: IGameData<any, any, any>,
+    private jsonIndent = 2
+  ) {
     this.sbUrl = (new URL(this.sbUrl, window.location.href)).href
     this.localStorageKey = "GBE Test " + (document.head.querySelector("TITLE")?.textContent || "Unknown");
-    this.index = 0;
     this.resetting = false;
     try {
       let data = window.localStorage.getItem(this.localStorageKey);
       if (data) {
-        if (data.search(/(\d+):/) === 0) {
-          this.index = parseInt(RegExp.$1);
-          data = data.substr(RegExp.$1.length + 1);
-        }
         this.gameData = JSON.parse(data);
         this.recoverAnnotations();
       }
@@ -43,14 +44,14 @@ export class TestGameService {
     return <Window[]>((<any>this.sbWindows)._events || (<any>this.sbWindows).buffer);
   }
   public monitor() {
-    this.game.server.playTest(this.gameData[this.index]);
-    var subscription = this._ngZone.runOutsideAngular(() => {
+    this.game.server.playTest(this.gameData);
+    const subscription = this._ngZone.runOutsideAngular(() => {
       return merge(
         this.game.server.moveMade
           .pipe(filter(() => !this.resetting))
           .pipe(mergeMap(state => {
-            const sIndex = this.gameData[this.index].states.length;
-            this.gameData[this.index].states.push(state);
+            const sIndex = this.gameData.states.length;
+            this.gameData.states.push(state);
             const pair = {
               state: state,
               annotation: this.getAnnotation(sIndex, state)
@@ -99,32 +100,28 @@ export class TestGameService {
   }
   private save() {
     try {
-      window.localStorage.setItem(this.localStorageKey, this.index + ":" + JSON.stringify(this.gameData));
+      window.localStorage.setItem(this.localStorageKey, JSON.stringify(this.gameData));
     } catch (e) {
-      console.error("Error storing " + this.gameData[this.index].states.length + " states.");
+      console.error("Error storing " + this.gameData.states.length + " states.");
     }
   }
   public reset() {
     this.resetting = true;
     window.localStorage.removeItem(this.localStorageKey);
-    this.gameData[this.index].states.length = 0;
-    if (this.annotations[this.index])
-      this.annotations[this.index].length = 0;
+    this.gameData.states.length = 0;
+    if (this.annotations)
+      this.annotations.length = 0;
     this.sendTeamTitlesToAll();
-    this.game.server.playTest(this.gameData[this.index]);
+    this.game.server.playTest(this.gameData);
     this.save();
     this.sendCurrentStatesToAll();
     this.resetting = false;
   }
   private recoverAnnotations() {
-    this.gameData.forEach((data, index) => {
-      this.annotations[index] = data.states.map(state => this.game.annotateState && this.game.annotateState(state));
-    });
+    this.annotations = this.gameData.states.map(state => this.game.annotateState && this.game.annotateState(state));
   }
   private getAnnotation(index: number, state: any) {
-    if (!this.annotations[this.index])
-      this.annotations[this.index] = [];
-    return this.annotations[this.index][index] = this.game.annotateState && this.game.annotateState(state);
+    return this.annotations[index] = this.game.annotateState && this.game.annotateState(state);
   }
   private sendTeamTitlesToAll() {
     this.getWindowBuffer().forEach(sbWindow => this.sendTeamTitles(sbWindow));
@@ -138,13 +135,23 @@ export class TestGameService {
   }
   private sendCurrentStates(sbWindow: Window) {
     if (!sbWindow.closed) {
-      const annotations = this.annotations[this.index];
+      const annotations = this.annotations;
       sbWindow.postMessage({
         type: "states",
-        pairs: this.gameData[this.index].states.map((state, index) => {
+        pairs: this.gameData.states.map((state, index) => {
           return { state: state, annotation: annotations[index] };
         })
       }, "*");
     }
+  }
+  export() {
+    return annotatedJson(this.gameData, annotate("", "over", "", "players", "", "states", this.annotations), Math.max(0, this.jsonIndent));
+  }
+  import(data: string) {
+    this.gameData = parseJson(data);
+    this.recoverAnnotations();
+    this.game.server.playTest(this.gameData);
+    this.sendTeamTitlesToAll();
+    this.sendCurrentStatesToAll();
   }
 }

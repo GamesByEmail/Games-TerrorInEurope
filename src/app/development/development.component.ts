@@ -19,11 +19,12 @@ export class DevelopmentComponent implements OnDestroy {
   public testGameService
   constructor(_ngZone: NgZone) {
     this.testGame = new Game();
+    
     this.testGameService = new TestGameService(
       _ngZone,
       "./StateBrowser",
       this.testGame,
-      [{
+      {
         over: false,
         players: [
           { title: "David", id: "ASDFASDF" },
@@ -34,12 +35,11 @@ export class DevelopmentComponent implements OnDestroy {
         ],
         states: [
         ]
-      }]);
-     //_ngZone.runOutsideAngular(()=>{
-        this.testGameService.monitor()
+      });
+
+    this.testGameService.monitor()
       .pipe(takeUntil(this.unsub))
       .subscribe();
-      //});
   }
   ngOnDestroy() {
     this.unsub.next();
