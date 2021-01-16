@@ -8,31 +8,31 @@ import { Trap } from './trap';
 export type CovertOpToken = Trap | Recruit | Bomb;
 
 export abstract class Token extends Piece {
-  abstract type:ETokenType
+  abstract type: ETokenType
   abstract title: string
   abstract aged(): void
   result!: ETokenResult;
   age!: number;
   visibility!: ETokenVisibility;
   setState(state: ITokenState) {
-    this._team=this.game.findTeam(TeamId.Terrorist);
+    this._team = this.game.findTeam(TeamId.Terrorist);
     if (state) {
-      this.age=state.a;
-      this.result=state.r;
-      this.visibility=state.v;
+      this.age = state.a;
+      this.result = state.r;
+      this.visibility = state.v;
     } else {
       this.age = 0;
       this.result = ETokenResult.UNDEFINED;
       this.visibility = ETokenVisibility.HIDDEN;
     }
   }
-  getState():ITokenState {
+  getState(): ITokenState {
     return {
-      c:this.territory.index,
-      t:this.type,
-      a:this.age,
-      v:this.visibility,
-      r:this.result
+      c: this.territory.index,
+      t: this.type,
+      a: this.age,
+      v: this.visibility,
+      r: this.result
     };
   }
   sortOrder() {
@@ -48,7 +48,16 @@ export abstract class Token extends Piece {
   hasExpired() {
     return this.age > 2;
   }
-  isCovertOps(){
+  isCovertOps() {
     return false;
+  }
+  increment(newAge: boolean = false) {
+    if (newAge && this.hasExpired())
+      this.changeTerritory(undefined!);
+    else {
+      this.age++;
+      if (this.hasExpired() && !this.result)
+        this.aged();
+    }
   }
 }

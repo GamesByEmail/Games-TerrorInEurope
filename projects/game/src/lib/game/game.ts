@@ -134,8 +134,10 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
               .subscribe(() => this.modalOpen.next(false));
           }
           this.saveIt(attacker);
-        } else
+        } else {
+          this.ageAllTokens(true);
           this.beginMeepleMove(attacker);
+        }
       });
   }
   clearRolls() {
@@ -148,13 +150,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   }
   informantTurn(informant: Team) {
     if (informant.agedMoveNumber === this.moveNumber) {
-      // Age tokens
-      const tokens = this.getAllTokens();
-      tokens.forEach(token => {
-        if (token.hasExpired() && !token.result)
-          token.aged();
-      });
-      informant.agedMoveNumber = this.moveNumber;
+      this.ageAllTokens();
       this.incrementTurn();
       this.saveIt(informant);
       return;
@@ -168,6 +164,10 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
         this.incrementTurn();
         this.saveIt(informant);
       });
+  }
+  ageAllTokens(newAge?:boolean){
+    this.getAllTokens().forEach(token => token.increment(newAge));
+    this.findTeam(TeamId.SpecialForces).agedMoveNumber = this.moveNumber;
   }
   getGeographicCenterOfOperatives() {
     const operatives = this.getOperatives().filter(op=>op.city);

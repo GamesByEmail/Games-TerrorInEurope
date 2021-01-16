@@ -173,7 +173,7 @@ export class CombatDialogComponent {
     }
   }
   close() {
-    this.dialogRef.close(this.defender);
+    this.dialogRef.close(this.combatBreak ? undefined : this.defender);
   }
   eval(value: any, props?: string) {
     if (props)
