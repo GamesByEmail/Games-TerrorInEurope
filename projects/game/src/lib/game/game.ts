@@ -11,6 +11,7 @@ import { ServerService } from 'projects/server/src/public-api';
 import { ETokenType, IInfoState, IOpsState, ITeamState, ITerrState } from './team-state';
 import { createToken } from './pieces/token/create-token';
 import { annotateGameState } from './state-annotation';
+import { IMapPoint } from '../boards/default/board/city-map-data';
 
 export interface IGameOptions {
   dark?: boolean;
@@ -33,6 +34,10 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   }
   header: string = "";
 
+  setOver() {
+    this._over = true;
+    this.teams.forEach(team => team.myTurn = false);
+  }
   private stateAbandon = new Subject();
   abandonState() {
     this.stateAbandon.next(true);
@@ -119,7 +124,10 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
         this.clearRolls();
         if (opponent) {
           if (attacker.combat(opponent, attacker.city)) {
-            this.incrementTurn();
+            if (this.findTeam(TeamId.Terrorist).strength === 0)
+              this.setOver();
+            else
+              this.incrementTurn();
             this.modalOpen.next(true);
             this.board.openCombat(attacker, defenders, () => attacker.city.mapData.location)
               .pipe(takeUntil(this.stateAbandon))
@@ -151,8 +159,26 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
       this.saveIt(informant);
       return;
     }
-    this.incrementTurn();
-    this.saveIt(informant);
+    this.clearRolls();
+    this.modalOpen.next(true);
+    this.board.openInformantNetwork(informant, () => this.getGeographicCenterOfOperatives())
+      .pipe(takeUntil(this.stateAbandon))
+      .subscribe(question => {
+        this.modalOpen.next(false);
+        this.incrementTurn();
+        this.saveIt(informant);
+      });
+  }
+  getGeographicCenterOfOperatives() {
+    const operatives = this.getOperatives().filter(op=>op.city);
+    const point: IMapPoint = { x: 0, y: 0 };
+    operatives.forEach(op => {
+      point.x += op.city.mapData.location.x;
+      point.y += op.city.mapData.location.y;
+    });
+    point.x /= operatives.length;
+    point.y /= operatives.length;
+    return point;
   }
   saving(): IGameSave {
     const saved = super.saving();
@@ -238,6 +264,6 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
     return this.teams.filter(team => team.isOperative());
   }
   annotateState(gameState: IGameState) {
-    return annotateGameState(this,gameState);
+    return annotateGameState(this, gameState);
   }
 }

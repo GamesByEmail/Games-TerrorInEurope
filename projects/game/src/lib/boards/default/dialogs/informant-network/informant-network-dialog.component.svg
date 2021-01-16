@@ -1,0 +1,118 @@
+<svg viewBox="0 0 420 435" width=420 height=435 xmlns="http://www.w3.org/2000/svg">
+  <g svg-dialog-title>
+    <text x="210" text-anchor="middle">Informant Network</text>
+  </g>
+  <!--
+  <g [style.display]="showFor(informant)">
+    <text x="210" y="50" text-anchor="middle">The {{operativeTitle()}} discovered a {{informant.title.toLowerCase()}} in</text>
+    <text x="210" y="70" text-anchor="middle">{{informant.city.title}} and must attempt to defeat it.</text>
+    <g transform="translate(160 140)">
+      <use [attr.href]="pieceHref(true)"/>
+      <text x="-15" y="-25" [style.display]="showFor(operativeStrength())" class="stengthText">{{operativeStrength()}}</text>
+    </g>
+    <use x="270" y="140" [attr.href]="pieceHref()" stroke="rgb(0,0,0)"/>
+  </g>
+  <g [style.display]="hideFor(informant)">
+    <text x="210" y="50" text-anchor="middle">A {{informant.title.toLowerCase()}} placed in</text>
+    <text x="210" y="70" text-anchor="middle">{{informant.city.title}} has succeeded.</text>
+    <use y="140" [attr.href]="pieceHref()" stroke="rgb(0,0,0)"/>
+  </g>
+  <g [style.display]="hideFor(rolls || !informant)" transform="translate(15 220)">
+    <g [style.display]="showFor('#Trap')" transform="translate(0,10)">
+      <text [style.display]="showFor('SecretAgents')" >&#8226; {{operativeTitle()}} throw two dice against traps and discard</text>
+      <text [style.display]="showFor('SecretAgents')" x="10" y="20">the higher roll.</text>
+      <text [style.display]="hideFor('SecretAgents')" y="20">&#8226; {{operativeTitle()}} throw one die against traps.</text>
+      <text y="45">&#8226; The {{operativeTitle(true)}} strength will go down by the amount rolled.</text>
+      <text y="70">&#8226; The {{operativeTitle()}} currently {{pluralForm('has')}} a strength of <tspan class="strengthInline">{{operativeStrength()}}</tspan>.</text>
+      <text y="95">&#8226; If the {{operativeTitle(true)}} strength goes to zero they will be</text>
+      <text x="10" y="115">dead until their next turn and the Terrorist will receive</text>
+      <text x="10" y="135">{{viktoryPoints(3)}}.</text>
+    </g>
+    <g [style.display]="showFor('#Recruit')">
+      <text [style.display]="showFor('SpecialForces')" >&#8226; {{operativeTitle()}} throw two dice against recruiting cells and</text>
+      <text [style.display]="showFor('SpecialForces')" x="10" y="20">discard the higher roll.</text>
+      <text [style.display]="hideFor('SpecialForces')" y="20">&#8226; {{operativeTitle()}} throw one die against recruiting cells.</text>
+      <text y="45">&#8226; This recruiting cell will be destroyed on a roll of 1-3.</text>
+      <text y="70">&#8226; This recruiting cell will be activated on a roll of 4-6 and the</text>
+      <text x="10" y="90">Terrorist will receive {{informant.city.recruitStrengthPoints()}} strength points (maxing out at 12).</text>
+      <text y="115">&#8226; On a roll of 6 the {{operativeTitle()}} {{pluralForm('is')}} also killed, remaining</text>
+      <text x="10" y="135">dead until thier next turn, and the Terrorist will receive</text>
+      <text x="10" y="155">{{viktoryPoints(1)}}.</text>
+    </g>
+    <g [style.display]="showFor('#Bomb')">
+      <text [style.display]="showFor('BombSquad')" >&#8226; {{operativeTitle()}} throw two dice against bombs and discard</text>
+      <text [style.display]="showFor('BombSquad')" x="10" y="20">the higher roll.</text>
+      <text [style.display]="hideFor('BombSquad')" y="20">&#8226; {{operativeTitle()}} throw one die against bombs.</text>
+      <text y="45">&#8226; This bomb will be defused on a roll of 1-3.</text>
+      <text y="70">&#8226; This bomb will explode on a roll of 4-6 and the Terrorist will</text>
+      <text x="10" y="90">receive {{viktoryPoints(informant.city.bombViktoryPoints())}}.</text>
+      <text y="115">&#8226; On a roll of 6 the {{operativeTitle()}} {{pluralForm('is')}} also killed, remaining</text>
+      <text x="10" y="135">dead until thier next turn, and the Terrorist will receive</text>
+      <text x="10" y="155">1 additional {{viktoryPoints()}}.</text>
+    </g>
+  </g>
+  <g [style.display]="showFor(rolls)">
+    <g [style.display]="showFor('#Trap')" transform="translate(210 285)">
+      <g [style.display]="showFor(informant &amp;&amp; informant.isAlive())">
+        <text y="25" text-anchor="middle">The trap was defeated. The {{operativeTitle(true)}}</text>
+        <text y="45" text-anchor="middle">strength went down by <tspan class="equationInline">{{rolls &amp;&amp; rolls[0]}}</tspan> to <tspan class="strengthInline">{{operativeStrength()}}</tspan>.</text>
+      </g>
+      <g [style.display]="showFor(informant &amp;&amp; informant.isDead())">
+        <text y="15" text-anchor="middle">The trap was successful and the {{operativeTitle()}}</text>
+        <text y="35" text-anchor="middle">killed, earning The Terrorist {{viktoryPoints(1)}}.</text>
+        <text y="60" text-anchor="middle">The Terrorist now has {{viktoryPoints(informant.viktoryPoints)}}.</text>
+      </g>
+    </g>
+    <g [style.display]="showFor('#Recruit')" transform="translate(210 290)">
+      <g [style.display]="showFor(rolls &amp;&amp; rolls[0]&lt;=3)">
+        <text y="35" text-anchor="middle">The recruiting cell was defeated.</text>
+      </g>
+      <g [style.display]="showFor(rolls &amp;&amp; rolls[0]&gt;=4)">
+        <text text-anchor="middle">The recruiting cell was successfull, giving the Terrorist</text>
+        <text y="20" text-anchor="middle"><tspan class="equationInline">{{informant.city.recruitStrengthPoints()}}</tspan> strength points, bringing their strength to <tspan class="strengthInline">{{informant.strength}}</tspan>.</text>
+      </g>
+      <g [style.display]="showFor(informant &amp;&amp; informant.isDead())">
+        <text y="45" text-anchor="middle">The {{operativeTitle()}} {{pluralForm('was')}} killed, earning.</text>
+        <text y="65" text-anchor="middle">the Terrorist {{viktoryPoints(1)}}.</text>
+        <text y="90" text-anchor="middle">The Terrorist now has {{viktoryPoints(informant.viktoryPoints)}}.</text>
+      </g>
+    </g>
+    <g [style.display]="showFor('#Bomb')" transform="translate(210 300)">
+      <g [style.display]="showFor(rolls &amp;&amp; rolls[0]&lt;=3)">
+        <text y="35" text-anchor="middle">The bomb was defused.</text>
+      </g>
+      <g [style.display]="showFor(rolls &amp;&amp; rolls[0]&gt;=4)">
+        <text text-anchor="middle">The bomb exploded, giving the Terrorist {{viktoryPoints(informant.city.bombViktoryPoints())}}.</text>
+        <g [style.display]="showFor(informant &amp;&amp; informant.isAlive())">
+          <text y="35" text-anchor="middle">The {{operativeTitle()}} survived the explosion.</text>
+        </g>
+        <g [style.display]="showFor(informant &amp;&amp; informant.isDead())">
+          <text y="25" text-anchor="middle">The {{operativeTitle()}} {{pluralForm('was')}} killed in the explosion, giving</text>
+          <text y="45" text-anchor="middle">the Terrorist 1 extra {{viktoryPoints()}}.</text>
+        </g>
+        <text y="70" text-anchor="middle">The Terrorist now has {{viktoryPoints(informant.viktoryPoints)}}.</text>
+      </g>
+    </g>
+  </g>
+  <g [style.display]="showFor(!informant)">
+    <g [style.display]="showFor('#Trap')" transform="translate(210 300)">
+      <text>The trap did not catch any Operatives.</text>
+    </g>
+    <g [style.display]="showFor('#Recruit')" transform="translate(210 300)">
+      <text>The recruiting cell was successfull, giving the Terrorist {{informant.city.recruitStrengthPoints()}} strength points</text>
+      <text y="20">bringing their strength to {{informant.strength}}.</text>
+    </g>
+    <g [style.display]="showFor('#Bomb')" transform="translate(210 300)">
+      <text>The bomb exploded, giving the Terrorist {{viktoryPoints(informant.city.bombViktoryPoints())}}.</text>
+      <text y="25">The Terrorist now has {{viktoryPoints(informant.viktoryPoints)}}.</text>
+    </g>
+  </g>
+  -->
+  <g svg-dialog-action>
+    <g svg-dialog-button="flat" width="180" (click)="close()">
+      <text [style.display]="showFor(informant &amp;&amp; !rolls)">{{informant ? "Roll Two Dice" : "Roll One Die"}}</text>
+      <text [style.display]="showFor(informant &amp;&amp; rolls)">{{informant &amp;&amp; informant.isDead() ? "Done" : "Next"}}</text>
+      <text [style.display]="showFor(!informant)">"Next"</text>
+    </g>
+  </g>
+</svg>

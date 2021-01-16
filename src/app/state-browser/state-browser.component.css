@@ -15,8 +15,15 @@
   font:12px consolas;
 }
 .team.turn {
+  background-color: rgb(200,255,200);
+}
+.active .team.turn {
   background-color: rgb(128,255,128);
 }
 .team.notPlaying {
   background-color: rgb(255,198,198);
+}
+.active pre {
+  background-color: rgb(233,255,233);
+
 }

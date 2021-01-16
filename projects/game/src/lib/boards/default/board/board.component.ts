@@ -15,6 +15,7 @@ import { CombatDialogService } from '../dialogs/combat/combat-dialog.service';
 import { Team } from '../../../game/team';
 import { CovertOpToken, Token } from '../../../game/pieces/token/token';
 import { ETokenResult, ETokenType } from '../../../game/team-state';
+import { InformantNetworkDialogService } from '../dialogs/informant-network/informant-network-dialog.service';
 
 @Component({
   selector: 'gamesbyemail-games-terrorInEurope-default-board',
@@ -81,7 +82,8 @@ export class BoardComponent implements AfterViewInit {
   viewBox: Rectangle2D = new Rectangle2D(0, 0, 100, 100);
   constructor(private cd: ChangeDetectorRef, private boardService: BoardService,
     private covertOpsDialogService: CovertOpsDialogService,
-    private combatDialogService: CombatDialogService
+    private combatDialogService: CombatDialogService,
+    private informantNetworkDialogService: InformantNetworkDialogService
   ) {
   }
   subscription!: Subscription;
@@ -117,13 +119,19 @@ export class BoardComponent implements AfterViewInit {
     const point = pointFnc();
     this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
     let ref = this.covertOpsDialogService.open(this.dialogArea, { operative: operative, token: token }, this.dialogOverlay);
-    return ref.afterClosed().pipe(finalize(()=>console.log("closezit:"+ref.close())));
+    return ref.afterClosed().pipe(finalize(()=>ref.close()));
   }
   openCombat(attacker: Team, defenders: Team[], pointFnc: () => IMapPoint) {
     const point = pointFnc();
     this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
     let ref = this.combatDialogService.open(this.dialogArea, { attacker: attacker, defenders: defenders }, this.dialogOverlay);
-    return ref.afterClosed().pipe(finalize(()=>console.log("closezit:"+ref.close())));
+    return ref.afterClosed().pipe(finalize(()=>ref.close()));
+  }
+  openInformantNetwork(informant: Team, pointFnc: () => IMapPoint) {
+    const point = pointFnc();
+    this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
+    let ref = this.informantNetworkDialogService.open(this.dialogArea, { informant: informant }, this.dialogOverlay);
+    return ref.afterClosed().pipe(finalize(()=>ref.close()));
   }
   tokenClass(token: Token) {
     return { aged: token.result === ETokenResult.AGED, won: token.result === ETokenResult.WON, lost: token.result === ETokenResult.LOST };

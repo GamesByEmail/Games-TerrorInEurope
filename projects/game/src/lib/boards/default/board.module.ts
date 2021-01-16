@@ -10,6 +10,7 @@ import { PiecesComponent } from './pieces/pieces.component';
 import { EntriesComponent } from './log/entries/entries.component';
 import { CovertOpsDialogModule } from './dialogs/covert-ops/covert-ops-dialog.module';
 import { CombatDialogModule } from './dialogs/combat/combat-dialog.module';
+import { InformantNetworkDialogModule } from './dialogs/informant-network/informant-network-dialog.module';
 
 @NgModule({
   imports: [
@@ -17,7 +18,8 @@ import { CombatDialogModule } from './dialogs/combat/combat-dialog.module';
     TemplateProjectionModule,
     BindElementModule,
     CovertOpsDialogModule,
-    CombatDialogModule
+    CombatDialogModule,
+    InformantNetworkDialogModule
   ],
   declarations: [
     BoardComponent,

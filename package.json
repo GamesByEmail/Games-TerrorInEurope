@@ -28,6 +28,7 @@
     "@packageforge/geometry2d": "0.0.11",
     "@packageforge/svg-dialog": "0.0.15",
     "@packageforge/template-projection": "0.0.4",
+    "@packageforge/annotated-json": "0.0.1",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.2"

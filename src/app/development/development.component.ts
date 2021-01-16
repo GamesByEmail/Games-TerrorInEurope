@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, NgZone, OnDestroy } from '@angular/core';
 import { IMe, testMes } from '@gamesbyemail/base';
 import { Game } from 'projects/game/src/lib/game/game';
 import { Subject } from 'rxjs';
@@ -17,9 +17,10 @@ export class DevelopmentComponent implements OnDestroy {
   testJoingame = testData.terrorInEurope;
   testGame
   public testGameService
-  constructor() {
+  constructor(_ngZone: NgZone) {
     this.testGame = new Game();
     this.testGameService = new TestGameService(
+      _ngZone,
       "./StateBrowser",
       this.testGame,
       [{
@@ -34,11 +35,12 @@ export class DevelopmentComponent implements OnDestroy {
         states: [
         ]
       }]);
-    this.testGameService.monitor()
+     //_ngZone.runOutsideAngular(()=>{
+        this.testGameService.monitor()
       .pipe(takeUntil(this.unsub))
       .subscribe();
+      //});
   }
-
   ngOnDestroy() {
     this.unsub.next();
     this.unsub.complete();

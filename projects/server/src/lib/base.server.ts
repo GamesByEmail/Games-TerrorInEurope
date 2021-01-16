@@ -1,4 +1,4 @@
-import { ReplaySubject } from "rxjs";
+import { ReplaySubject, Subject } from "rxjs";
 import { IBaseMove, IGameData } from "@gamesbyemail/base";
 
 export interface IBaseTeamState {
@@ -24,20 +24,24 @@ export abstract class BaseServer<IGame extends IBaseStateGame<any, any, any>, IG
   protected abstract move(state: IGameState, oldState: IGameState): void
   protected abstract buildInitialState(gameData: IGameData<any, IGameState, any>): IGameState
 
-  private _history = new ReplaySubject<IGameState>()
-  public history = this._history.asObservable();
+  public stateBuffer:IGameState[] = [];
+  public moveMade = new Subject<IGameState>();
   constructor(private game: IGame) { }
 
   protected initialize(gameData: IGameData<any, IGameState, any>): IGameData<any, IGameState, any> {
     gameData.states.push(this.buildInitialState(gameData));
     return gameData;
   }
-
+  protected truncate(moveNumber: number) {
+    const index = this.stateBuffer.findIndex(state => state.moveNumber === moveNumber);
+    if (index >= 0)
+      this.stateBuffer.length = index;
+  }
   public playTest(gameData: IGameData<any, IGameState, any>) {
     if (gameData.states.length === 0)
       gameData = this.initialize(gameData);
-    this.historyBuffer().length = 0;
-    gameData.states.forEach(state => this.pushState(this.cloneState(state)));
+    this.stateBuffer=gameData.states.map(state => this.cloneState(state));
+    this.setTeamIsUs(this.stateBuffer[this.stateBuffer.length-1]);
     this.game.setGameData(gameData);
   }
   public goToMove(moveNumber: number, teamIndex: number) {
@@ -48,11 +52,8 @@ export abstract class BaseServer<IGame extends IBaseStateGame<any, any, any>, IG
   protected cloneState(state: IGameState) {
     return JSON.parse(JSON.stringify(state))
   }
-  private historyBuffer() {
-    return <IGameState[]>((<any>this._history)._events) || ((<any>this._history).buffer);
-  }
   protected current(moveNumber?: number) {
-    const buffer = this.historyBuffer();
+    const buffer = this.stateBuffer;
     return this.cloneState(typeof (moveNumber) === "number" ? buffer.find(state => state.moveNumber === moveNumber)! : buffer[buffer.length - 1]);
   }
   protected clearTurns(state: IGameState) {
@@ -70,11 +71,13 @@ export abstract class BaseServer<IGame extends IBaseStateGame<any, any, any>, IG
       for (let i = 0; i < using.teams.length; i++)
         this.game.teams[i].uuid = using.teams[i].$T ? "ASDFASDFASDF" : undefined;
   }
-  protected pushState(state: IGameState) {
-    this._history.next(state);
-    this.setTeamIsUs(state);
+  protected pushState(clonedState: IGameState) {
+    this.stateBuffer.push(clonedState);
+    this.moveMade.next(clonedState);
+    this.setTeamIsUs(clonedState);
   }
   public setState(state: IGameState, team: IBaseTeam) {
+    this.truncate(state.moveNumber);
     const oldState = this.current();
     const newState = this.cloneState(state);
     if (oldState)

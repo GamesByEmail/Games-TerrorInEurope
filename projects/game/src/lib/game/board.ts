@@ -13,6 +13,7 @@ import { ICovertOpsDialogResult } from '../boards/default/dialogs/covert-ops/cov
 import { ICombatDialogResult } from '../boards/default/dialogs/combat/combat-dialog.service';
 import { CovertOpToken } from './pieces/token/token';
 import { ITeamState } from './team-state';
+import { IInformantNetworkDialogResult } from '../boards/default/dialogs/informant-network/informant-network-dialog.service';
 
 export interface IBoardSave extends IBaseBoardSave<Game, IGameOptions, IGameState, IGameSave, Board, undefined, IBoardSave, Territory, undefined, ITerritorySave, Team, TeamId, ITeamState, ITeamSave, Move, IModMove> {
 }
@@ -20,6 +21,7 @@ export interface IBoardSave extends IBaseBoardSave<Game, IGameOptions, IGameStat
 export interface IBoardController {
   openCovertOps(operative: Team | undefined, token: CovertOpToken, pointFnc: () => IMapPoint): Observable<ICovertOpsDialogResult | undefined>
   openCombat(attacker: Team, defenders: Team[], pointFnc: () => IMapPoint): Observable<ICombatDialogResult | undefined>
+  openInformantNetwork(informant: Team, pointFnc: () => IMapPoint): Observable<IInformantNetworkDialogResult | undefined>
 }
 
 export class Board extends BaseMapBoard<
@@ -85,5 +87,10 @@ export class Board extends BaseMapBoard<
   openCombat(attacker: Team, defenders: Team[], pointFnc: () => IMapPoint) {
     return this.controller
       .pipe(mergeMap(c => c.openCombat(attacker, defenders, pointFnc)));
+  }
+
+  openInformantNetwork(informant: Team, pointFnc: () => IMapPoint) {
+    return this.controller
+      .pipe(mergeMap(c => c.openInformantNetwork(informant, pointFnc)));
   }
 }

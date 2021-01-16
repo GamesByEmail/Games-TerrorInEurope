@@ -1,5 +1,5 @@
 <div class="team">init</div>
-<table *ngFor="let state of states, index as i">
+<table *ngFor="let state of states, index as i" [ngClass]="{active:features[i].active}">
 <tr><td valign=top width="0">
   <input type=button [value]="features[i].open ? '-' : '+'" (click)="features[i].open=!features[i].open"><br>
   <input type=button [value]="features[i].annotate ? '¿' : '?'" (click)="features[i].annotate=!features[i].annotate">

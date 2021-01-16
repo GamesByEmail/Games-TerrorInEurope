@@ -4,12 +4,13 @@ import { IGameState } from 'projects/game/src/lib/game/game';
 import { Subject, timer } from 'rxjs';
 import { fromEvent } from 'rxjs/internal/observable/fromEvent';
 import { filter, takeUntil, takeWhile } from 'rxjs/operators';
-import { annotatedJson } from './annotated-json';
+import { annotatedJson } from '@packageforge/annotated-json';
 
 interface IFeature {
   open: boolean
   annotate: boolean
   annotation: any
+  active: boolean
 }
 
 @Component({
@@ -25,7 +26,8 @@ export class StateBrowserComponent implements OnDestroy {
   features: IFeature[] = []
   teamTitles: string[] = []
   inactive = true
-  constructor(titleService: Title,_ngZone: NgZone) {
+  jsonIndent = 2;
+  constructor(titleService: Title, _ngZone: NgZone) {
     titleService.setTitle(titleService.getTitle() + " - State Browser");
     fromEvent<MessageEvent>(window, "message")
       .pipe(filter(event => typeof (event.data.type) === "string"))
@@ -37,6 +39,7 @@ export class StateBrowserComponent implements OnDestroy {
             this.states.length = 0;
             this.features.length = 0;
             this.teamTitles = message.data.titles;
+            this.jsonIndent = message.data.jsonIndent;
             break;
           case "states":
             message.data.pairs.forEach((pair: any) => this.addPair(pair));
@@ -46,33 +49,47 @@ export class StateBrowserComponent implements OnDestroy {
             break;
         }
       });
-      _ngZone.runOutsideAngular(()=>
-        timer(0, 1000)
-          .pipe(takeWhile(() => window.opener))
-          .pipe(takeUntil(this.unsub))
-          .subscribe({
-            next: () => window.opener.postMessage({ type: this.teamTitles.length === 0 ? "ready" : "waiting" }, "*"),
-            complete: () => this.inactive = true
-          }));
+    _ngZone.runOutsideAngular(() =>
+      timer(0, 1000)
+        .pipe(takeWhile(() => window.opener))
+        .pipe(takeUntil(this.unsub))
+        .subscribe({
+          next: () => {
+            window.opener.postMessage({ type: this.teamTitles.length === 0 ? "ready" : "waiting" }, "*");
+          },
+          complete: () => this.inactive = true
+        })
+    );
   }
   ngOnDestroy() {
     this.unsub.next();
     this.unsub.complete();
   }
   addPair(pair: { state: IGameState, annotation: any }) {
-    const index = this.states.length;
+    const moveNumber = pair.state.moveNumber;
+    let index = this.states.findIndex(s => s.moveNumber === moveNumber);
+    if (index >= 0)
+      this.features.length = this.states.length = index;
+    else
+      index = this.states.length;
     this.features[index] = {
       open: false,
       annotate: true,
-      annotation: pair.annotation
+      annotation: pair.annotation,
+      active: true
     };
     this.states[index] = pair.state;
+    this.setStateActive(moveNumber);
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+  setStateActive(moveNumber: number) {
+    this.features.forEach((feature, index) => feature.active = (this.states[index].moveNumber === moveNumber));
   }
   turnTeamTitle(state: IGameState) {
     return this.teamTitles[state.teams.findIndex(team => team.$T)];
   }
   toJson(value: any, feature: IFeature) {
-    return annotatedJson(value,feature.annotate ? feature.annotation : undefined,!feature.open);
+    return annotatedJson(value, feature.annotate ? feature.annotation : undefined, feature.open ? this.jsonIndent : -1);
   }
   teamClass(teamIndex: number, state: IGameState) {
     if (state.teams[teamIndex].$T) return "team turn";
@@ -80,6 +97,7 @@ export class StateBrowserComponent implements OnDestroy {
     return "team";
   }
   goToMove(moveNumber: number, teamIndex: number) {
+    this.setStateActive(moveNumber);
     window.opener && window.opener.postMessage({ type: "goToMove", moveNumber: moveNumber, teamIndex: teamIndex }, "*");
   }
 }
