@@ -22,9 +22,31 @@ export function operativeDieFill() {
 export function terroristDieFill() {
   return findDieFill('qwerty');
 }
-export function maybeTie(rolls: number[]) {
+export function maybeControlDamage(aRolls: number[], dRolls: number[], aOp: boolean) {
   if (findDieFill('`')) {
-    rolls[0] = 5 - rolls[1];
+    const oFill = operativeDieFill();
+    const tFill = terroristDieFill();
+    const oRolls = aOp ? aRolls : dRolls;
+    const tRolls = aOp ? dRolls : aRolls;
+    if (oFill)
+      targetDamage(tRolls, oRolls, oFill);
+    else if (tFill)
+      targetDamage(oRolls, tRolls, tFill);
+    else
+      targetDamage(aRolls, dRolls, 0);
   }
 }
-
+function targetDamage(winRolls: number[], loseRolls: number[], target: number) {
+  const modifier = winRolls[1] - loseRolls[1];
+  let winRoll = 1;
+  let loseRoll = 6;
+  while (winRoll < 6 && loseRoll > 1 && (winRoll - loseRoll + modifier) < target) {
+    winRoll++;
+    if ((winRoll - loseRoll + modifier) < target)
+      loseRoll--;
+    else
+      break;
+  }
+  winRolls[0] = winRoll;
+  loseRolls[0] = loseRoll;
+}

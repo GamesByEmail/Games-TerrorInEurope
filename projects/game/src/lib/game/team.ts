@@ -4,7 +4,7 @@ import { Board, IBoardSave } from './board';
 import { Territory, ITerritorySave } from './territory';
 import { TeamId } from './team-id';
 import { Move, IModMove } from './move';
-import { maybeTie, operativeDieFill, terroristDieFill } from './cheat';
+import { maybeControlDamage, operativeDieFill, terroristDieFill } from './cheat';
 import { Meeple } from './pieces/meeple/meeple';
 import { Trap } from './pieces/token/trap';
 import { Bomb } from './pieces/token/bomb';
@@ -209,18 +209,18 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
     }
     return modifier;
   }
-  rollForCombat(opponent: Team, inCity: Territory, asAttacker: boolean): number[] {
+  private rollForCombat(opponent: Team, inCity: Territory, asAttacker: boolean): number[] {
     this.rollDice(1);
     this.rolls.push(this.getCombatModifier(opponent, inCity, asAttacker));
-    maybeTie(this.rolls);
     if (this.isTerrorist())
       this.rolls.push(operativeOrder.indexOf(opponent.id));
-    return this.getRolls()!;
+    return this.rolls;
   }
 
   combat(defender: Team, inCity: Territory) {
     const ourRolls = this.rollForCombat(defender, inCity, true);
     const defenderRolls = defender.rollForCombat(this, inCity, false);
+    maybeControlDamage(ourRolls, defenderRolls, this.isOperative());
     const ourTotal = ourRolls[0] + ourRolls[1];
     const defenderTotal = defenderRolls[0] + defenderRolls[1];
     if (ourTotal === defenderTotal)
