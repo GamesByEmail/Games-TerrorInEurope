@@ -85,12 +85,12 @@
   </g>
 
   <g svg-dialog-action>
-    <g svg-dialog-button="flat"  [style.display]="showFor(readyToFight || next || done)" width="180" (click)="close()">
+    <g svg-dialog-button="flat" [style.display]="showFor(readyToFight || next || done)" [attr.transform]="canCancel ? 'translate(100 0)' : ''" width="180" (click)="close()">
       <text [style.display]="showFor(readyToFight)">Roll For Combat</text>
       <text [style.display]="showFor(next)">Next</text>
       <text [style.display]="showFor(done)">Done</text>
     </g>
-    <g svg-dialog-button="flat"  [style.display]="showFor(canCancel)" width="180" (click)="cancel()">
+    <g svg-dialog-button="flat" [style.display]="showFor(canCancel)" [attr.transform]="readyToFight || next || done ? 'translate(-100 0)' : ''" width="180" (click)="cancel()">
       <text>Cancel</text>
     </g>
   </g>

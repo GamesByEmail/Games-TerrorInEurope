@@ -91,12 +91,18 @@ export class CombatDialogComponent {
   }
   sortDefenders() {
     this.defenders.sort((a, b) => {
-      if (!a || a === this.defender)
+      if (!a)
+        return 1;
+      if (!b)
         return -1;
-      if (!b || b === this.defender)
+      if (a === this.defender)
+        return -1;
+      if (b === this.defender)
         return 1;
       return b.strength - a.strength;
     });
+    while (this.defenders[2] === undefined)
+      this.defenders.unshift(this.defenders.pop());
     const liveDefenders = this.getLiveDefenders(false);
     if (!this.defender && liveDefenders.length === 1)
       this.defender = liveDefenders[0];

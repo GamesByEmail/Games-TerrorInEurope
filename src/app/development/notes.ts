@@ -39,6 +39,6 @@ button to see the game at that point as that player would have seen it. The play
 is at that point has a green button. If you choose that team and play a move, the states past that
 point will be deleted, and the game will resume from there.
 
-Be careful when choosing the last move of the Informant Network's turn, as that move is automatic and will 
-immediately submit again, deleting all moves past that point.
+Be careful when choosing the last move of the Informant Network's turn (marked by red text on the button).
+That move is automatic and will immediately submit again, deleting all moves past that point.
 `;

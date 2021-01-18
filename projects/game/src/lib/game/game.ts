@@ -82,8 +82,10 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
                 const operatives = turnTeam.city.findOperatives();
                 if (turnTeam.hasRolls() || operatives.filter(o => o.isAlive()).length > 0)
                   this.resolveCombat(turnTeam, operatives);
-                else
+                else {
+                  this.save();
                   this.beginMeepleMove(turnTeam);
+                }
               }
             else
               this.beginMeepleMove(turnTeam);
@@ -113,7 +115,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
         }
       });
   }
-  resolveCombat(attacker: Team, defenders: Team[]) {
+  resolveCombat(attacker: Team, defenders: Team[], mustAge: boolean = true) {
     this.modalOpen.next(true);
     this.board.openCombat(attacker, defenders, () => attacker.city.mapData.location)
       .pipe(takeUntil(this.stateAbandon))
@@ -136,13 +138,17 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
           if (opponent === false)
             this.restore();
           this.save();
-          this.ageAllTokens(true);
+          if (mustAge)
+            this.ageAllTokens(true);
           this.beginMeepleMove(attacker);
         }
       });
   }
   clearRolls() {
-    this.teams.forEach(t => t.clearRolls());
+    this.teams.forEach(t => {
+      if (!t.isInformantNetwork())
+        t.clearRolls();
+    });
   }
   beginMeepleMove(team: Team) {
     this.clearRolls();
@@ -207,12 +213,13 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
       const token = createToken(this.board.game, tokenType || ETokenType.MARKER);
       token.changeTerritory(city);
     }
+    const hadOperative = turnTeam.city && turnTeam.city.hasOperative();
     if (city === turnTeam.city)
       turnTeam.setStrength(100);
     else
       turnTeam.city = city;
     if (turnTeam.isTerrorist() && city.hasOperative(true))
-      this.resolveCombat(turnTeam, city.findOperatives());
+      this.resolveCombat(turnTeam, city.findOperatives(), hadOperative);
     else {
       this.incrementTurn();
       this.saveIt(turnTeam);
