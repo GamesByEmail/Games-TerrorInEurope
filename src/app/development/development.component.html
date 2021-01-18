@@ -1,6 +1,6 @@
 <gamesbyemail-base-test [game-name]="'Terror In Europe'" [play]="play" [start-game]="startGame" [join-game]="joinGame" [rules]="rules"></gamesbyemail-base-test>
 <ng-template #play>
-  <gamesbyemail-base-testgame [service]="testGameService" style="position: absolute;"></gamesbyemail-base-testgame>
+  <gamesbyemail-base-testgame [service]="testGameService" [notes]="notes" style="position: absolute;"></gamesbyemail-base-testgame>
   <gamesbyemail-games-terrorInEurope-play #game [game]="testGame" style="display:inline-block;width:800px"></gamesbyemail-games-terrorInEurope-play>
 </ng-template>
 <ng-template #startGame>

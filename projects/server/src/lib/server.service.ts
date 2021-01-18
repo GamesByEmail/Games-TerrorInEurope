@@ -21,7 +21,7 @@ export class ServerService extends BaseServer<Game, IGameState> {
   protected move(state: IGameState, oldState: IGameState) {
     if (!oldState)
       return;
-    if (oldState.teams[3].$T && state.teams[4].$T) {
+    if (oldState.teams[3].$T && oldState.teams[4].$T && !state["$@"]) {
       const infoState = state.teams[3];
       if (infoState.a < state.moveNumber - 1) {
         infoState.a = state.moveNumber;
@@ -29,7 +29,7 @@ export class ServerService extends BaseServer<Game, IGameState> {
         this.ageTokens(terrState);
         if (terrState.t && terrState.t.length === 0)
           delete terrState.t;
-        if (JSON.stringify(terrState.t) !== JSON.stringify(oldState.teams[4].t)) {
+        if (terrState.t && !this.compareData(terrState.t, oldState.teams[4].t)) {
           delete state.teams[4].$T;
           state.teams[3].$T = true;
         }
@@ -61,7 +61,7 @@ export class ServerService extends BaseServer<Game, IGameState> {
     }
   }
   private ageTokens(tState: ITerrState) {
-    const vTokens = this.ageTokensList(tState.$_!.t, 2)
+    const vTokens = this.ageTokensList(tState.$_!.t, 2);
     if (!tState.t)
       tState.t = [];
     this.ageTokensList(tState.t, 3);

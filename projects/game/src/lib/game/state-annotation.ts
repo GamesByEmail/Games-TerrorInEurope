@@ -29,9 +29,9 @@ function teamNameAnnotation(teamState: ITerrState, index: number) {
   if (index === 4)
     if (typeof (teamState.$_?.c) === "number")
       if (typeof (teamState.c) === "number" && teamState.c >= 0)
-        anno += " VISIBLE";
+        anno += ", location known";
       else
-        anno += " HIDDEN";
+        anno += ", location unknown";
     else
       anno += " - NOT PLACED";
   return anno;

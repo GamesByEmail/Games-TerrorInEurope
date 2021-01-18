@@ -34,10 +34,6 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   }
   header: string = "";
 
-  setOver() {
-    this._over = true;
-    this.teams.forEach(team => team.myTurn = false);
-  }
   private stateAbandon = new Subject();
   abandonState() {
     this.stateAbandon.next(true);
@@ -51,9 +47,11 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
       .subscribe(o => {
         this._moveNumber = -1;
         this.board.clear();
+        this.board.setState();
         super.setState(state);
         this.header = "";
         const turnTeam = this.findTurnTeam();
+        //console.log("turnTeam", turnTeam?.title, turnTeam?.isUs())
         if (turnTeam && turnTeam.isUs()) {
           if (turnTeam.isInformantNetwork())
             this.informantTurn(turnTeam);
@@ -135,6 +133,9 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
           }
           this.saveIt(attacker);
         } else {
+          if (opponent === false)
+            this.restore();
+          this.save();
           this.ageAllTokens(true);
           this.beginMeepleMove(attacker);
         }
@@ -152,7 +153,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
     if (informant.agedMoveNumber === this.moveNumber) {
       this.ageAllTokens();
       this.incrementTurn();
-      this.saveIt(informant);
+      this.saveIt(informant, true);
       return;
     }
     this.clearRolls();
@@ -165,12 +166,12 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
         this.saveIt(informant);
       });
   }
-  ageAllTokens(newAge?:boolean){
-    this.getAllTokens().forEach(token => token.increment(newAge));
-    this.findTeam(TeamId.SpecialForces).agedMoveNumber = this.moveNumber;
+  ageAllTokens(terroristReMoving?: boolean) {
+    this.getAllTokens().forEach(token => token.increment(terroristReMoving));
+    this.findTeam(TeamId.InformantNetwork).agedMoveNumber = this.moveNumber;
   }
   getGeographicCenterOfOperatives() {
-    const operatives = this.getOperatives().filter(op=>op.city);
+    const operatives = this.getOperatives().filter(op => op.city);
     const point: IMapPoint = { x: 0, y: 0 };
     operatives.forEach(op => {
       point.x += op.city.mapData.location.x;
@@ -239,8 +240,10 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
     nextTeam.myTurn = true;
   }
   server = new ServerService(this)
-  saveIt(team: Team) {
-    this.server.setState(this.commit(), team);
+  saveIt(team: Team, isAutomatic: boolean = false) {
+    if (team.isTerrorist())
+      this.ageAllTokens();
+    this.server.setState(this.commit(), team, isAutomatic);
     this.setState(this.server.getState());
   }
 

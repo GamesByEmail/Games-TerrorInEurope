@@ -1,4 +1,6 @@
 <input type=button value="State Browser" (click)="service.openStateBrowser()"/>
 <input type=button #export value="Export" (click)="doExport(export)"/>
 <input type=button #import value="Import" (click)="doImport(import)"/>
+<input type=button #import value="{{showNotes ? '&#9650;' : '&#9660;' }} Notes" (click)="showNotes=!showNotes"/>
 <input type=button value="Reset" (click)="service.reset()" style="margin-left:10px"/>
+<pre class="notes" [ngClass]="{showNotes:showNotes}">{{notes}}</pre>

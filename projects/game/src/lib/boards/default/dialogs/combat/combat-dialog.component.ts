@@ -33,6 +33,7 @@ export class CombatDialogComponent {
   next: boolean
   done: boolean
   chooseDefender: boolean
+  canCancel: boolean
   constructor(public dialogRef: SvgDialogRef<ICombatDialogResult | undefined>, @Inject(SVG_DIALOG_DATA) public data: ICombatDialogData) {
     this.attacker = this.data.attacker;
     this.defenders = <any>this.data.defenders.slice()
@@ -81,6 +82,7 @@ export class CombatDialogComponent {
     this.done = !this.attacker.myTurn;
     this.chooseDefender = !this.defender || (this.defender.isDead() && this.getLiveDefenders().length > 0);
     this.next = !this.chooseDefender && !this.readyToFight && !this.done && this.rolls !== undefined;
+    this.canCancel=this.tAttack && !this.rolls;
   }
   getLiveDefenders(includingCurrent: boolean = true) {
     if (!this.defender)
@@ -174,6 +176,9 @@ export class CombatDialogComponent {
   }
   close() {
     this.dialogRef.close(this.combatBreak ? undefined : this.defender);
+  }
+  cancel() {
+    this.dialogRef.close(false);
   }
   eval(value: any, props?: string) {
     if (props)

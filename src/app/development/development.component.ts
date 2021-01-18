@@ -5,6 +5,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { TestGameService } from '../test-game/test-game.service';
 import { testData } from './test-data';
+import { notes } from './notes';
 
 @Component({
   selector: 'development',
@@ -17,9 +18,10 @@ export class DevelopmentComponent implements OnDestroy {
   testJoingame = testData.terrorInEurope;
   testGame
   public testGameService
+  public notes=notes
   constructor(_ngZone: NgZone) {
     this.testGame = new Game();
-    
+
     this.testGameService = new TestGameService(
       _ngZone,
       "./StateBrowser",

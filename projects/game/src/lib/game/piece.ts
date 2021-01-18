@@ -7,16 +7,18 @@ import { Terrorist } from './pieces/meeple/terrorist';
 import { ITokenState } from './team-state';
 import { Token } from './pieces/token/token';
 
-export interface IPieceSave {
-  territory: number;
+export interface IPieceSave<T = any> {
+  territory: number
+  data?: T
 }
 export abstract class Piece {
 
   abstract readonly type: string;
-  abstract setState(state: ITokenState|Team):void;
-  abstract getState(): ITokenState|undefined;
+  abstract setState(state: ITokenState | Team): void;
+  abstract getState(): ITokenState | undefined;
   abstract sortOrder(): number;
   abstract svgId(): string;
+  abstract title: string;
 
   public get game(): Game {
     return this._game;
@@ -35,7 +37,7 @@ export abstract class Piece {
   private stateStore = new StateStore<IPieceSave>();
   public showCheck = false;
   public offset = 0;
-  constructor(private _game: Game, state: ITokenState|Team) {
+  constructor(private _game: Game, state: ITokenState | Team) {
     this.setState(state);
   }
   canMove(): boolean {

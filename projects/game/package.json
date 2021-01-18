@@ -6,7 +6,7 @@
     "@angular/cdk": ">=11.0.3",
     "@angular/common": ">=11.0.4",
     "@angular/core": ">=11.0.4",
-    "@gamesbyemail/base": ">-0.1.1",
+    "@gamesbyemail/base": ">-0.1.2",
     "@packageforge/deep-copy": ">=0.0.2",
     "@packageforge/deferred": ">=0.0.5",
     "@packageforge/geometry2d": ">=0.0.11",

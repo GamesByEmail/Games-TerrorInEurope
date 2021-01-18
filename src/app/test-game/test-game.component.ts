@@ -9,8 +9,10 @@ import { TestGameService } from './test-game.service';
   styleUrls: ['./test-game.component.css']
 })
 export class TestGameComponent implements OnDestroy {
-  unsub = new Subject();
-  @Input("service") service!: TestGameService
+  private unsub = new Subject();
+  @Input("service") public service!: TestGameService
+  @Input("notes") public notes!: string
+  showNotes=false;
   ngOnDestroy(): void {
     this.unsub.next();
     this.unsub.complete();

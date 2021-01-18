@@ -7,7 +7,7 @@ export interface ICombatDialogData {
   attacker: Team
   defenders: Team[]
 }
-export type ICombatDialogResult = Team;
+export type ICombatDialogResult = Team | false;
 
 
 @Injectable({

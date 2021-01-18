@@ -45,6 +45,8 @@ export class TestGameService {
   }
   public monitor() {
     this.game.server.playTest(this.gameData);
+    if (this.gameData.states.length === 0)
+      this.gameData.states.push(...this.game.server.stateBuffer);
     const subscription = this._ngZone.runOutsideAngular(() => {
       return merge(
         this.game.server.moveMade
@@ -113,6 +115,7 @@ export class TestGameService {
       this.annotations.length = 0;
     this.sendTeamTitlesToAll();
     this.game.server.playTest(this.gameData);
+    this.gameData.states.push(...this.game.server.stateBuffer);
     this.save();
     this.sendCurrentStatesToAll();
     this.resetting = false;

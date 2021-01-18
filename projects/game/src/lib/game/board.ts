@@ -51,10 +51,10 @@ export class Board extends BaseMapBoard<
   constructor(game: Game) {
     super(game, boardData);
   }
-  setState(state:undefined){
+  setState() {
     this.clearFlags();
   }
-  getState(){
+  getState() {
     return undefined;
   }
   createTerritory(index: number, data: ITerritoryData): Territory {

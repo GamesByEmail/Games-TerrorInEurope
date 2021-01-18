@@ -23,6 +23,10 @@
 .team.notPlaying {
   background-color: rgb(255,198,198);
 }
+.autoMove .team.turn {
+  font-weight: bold;
+  color:red;
+}
 .active pre {
   background-color: rgb(233,255,233);
 

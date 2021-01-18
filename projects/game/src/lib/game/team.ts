@@ -15,7 +15,11 @@ import { createMeeple } from './pieces/meeple/create-meeple';
 import { CovertOpToken } from './pieces/token/token';
 
 export interface ITeamSave extends IBaseTeamSave<Game, IGameOptions, IGameState, IGameSave, Board, undefined, IBoardSave, Territory, undefined, ITerritorySave, Team, TeamId, ITeamState, ITeamSave, Move, IModMove> {
+  city: number
   strength: number
+  viktoryPoints: number
+  agedMoveNumber: number
+  rolls: number[]
 }
 
 const operativeOrder = [TeamId.SecretAgents, TeamId.BombSquad, TeamId.SpecialForces];
@@ -140,12 +144,20 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
   }
   saving() {
     const saving = super.saving();
+    saving.city = this.city ? this.city.index : -1;
     saving.strength = this.strength;
+    saving.viktoryPoints = this.viktoryPoints;
+    saving.agedMoveNumber = this.agedMoveNumber;
+    saving.rolls = this.rolls.slice();
     return saving;
   }
   restoring(saved: ITeamSave) {
     super.restoring(saved);
+    this.city = saved.city < 0 ? undefined! : this.game.board.territories[saved.city];
     this.strength = saved.strength;
+    this.viktoryPoints = saved.viktoryPoints;
+    this.agedMoveNumber = saved.agedMoveNumber;
+    this.rolls = saved.rolls;
   }
   isSecretAgents() {
     return this.id === TeamId.SecretAgents;

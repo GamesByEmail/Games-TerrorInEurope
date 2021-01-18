@@ -80,7 +80,14 @@ export class StateBrowserComponent implements OnDestroy {
     };
     this.states[index] = pair.state;
     this.setStateActive(moveNumber);
-    window.scrollTo(0, document.body.scrollHeight);
+    this.needScroll = true;
+  }
+  needScroll = false;
+  ngAfterViewChecked() {
+    if (this.needScroll) {
+      this.needScroll = false;
+      window.scrollTo(0, document.body.scrollHeight);
+    }
   }
   setStateActive(moveNumber: number) {
     this.features.forEach((feature, index) => feature.active = (this.states[index].moveNumber === moveNumber));

@@ -1,4 +1,4 @@
-import { Piece } from '../../piece';
+import { IPieceSave, Piece } from '../../piece';
 import { TeamId } from '../../team-id';
 import { ETokenResult, ETokenType, ETokenVisibility, ITokenState } from '../../team-state';
 import { Bomb } from './bomb';
@@ -6,6 +6,12 @@ import { Recruit } from './recruit';
 import { Trap } from './trap';
 
 export type CovertOpToken = Trap | Recruit | Bomb;
+
+interface ITokenSave {
+  result: ETokenResult
+  age: number
+  visibility: ETokenVisibility
+}
 
 export abstract class Token extends Piece {
   abstract type: ETokenType
@@ -35,6 +41,23 @@ export abstract class Token extends Piece {
       r: this.result
     };
   }
+  saving() {
+    const saving = <IPieceSave<ITokenSave>>super.saving();
+    saving.data = {
+      result: this.result,
+      age: this.age,
+      visibility: this.visibility
+    };
+    return saving;
+  }
+  restoring(saved: IPieceSave<ITokenSave>) {
+    super.restoring(saved);
+    if (saved.data) {
+      this.result = saved.data.result;
+      this.age = saved.data.age;
+      this.visibility = saved.data.visibility;
+    }
+  }
   sortOrder() {
     return 0;
   }
@@ -51,13 +74,13 @@ export abstract class Token extends Piece {
   isCovertOps() {
     return false;
   }
-  increment(newAge: boolean = false) {
-    if (newAge && this.hasExpired())
-      this.changeTerritory(undefined!);
-    else {
-      this.age++;
-      if (this.hasExpired() && !this.result)
-        this.aged();
-    }
+  increment(terroristReMoving: boolean = false) {
+    if (terroristReMoving)
+      if (this.hasExpired())
+        this.changeTerritory(undefined!);
+      else
+        this.age++;
+    if (this.hasExpired() && !this.result)
+      this.aged();
   }
 }

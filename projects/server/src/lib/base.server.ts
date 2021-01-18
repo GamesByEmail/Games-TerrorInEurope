@@ -1,15 +1,17 @@
-import { ReplaySubject, Subject } from "rxjs";
+import { Subject } from "rxjs";
 import { IBaseMove, IGameData } from "@gamesbyemail/base";
 
 export interface IBaseTeamState {
   $T?: boolean // myTurn, should default to false.
   $P?: boolean // playing, should default to true.
+  "$@"?: boolean // An automatically submitted turn, defaults to false.
   $_?: any     // Private data, can only be set and seen by owner.
 }
 export interface IBaseGameState<ITeamState extends IBaseTeamState, IMove extends IBaseMove<any>> {
   moveNumber: number
   teams: ITeamState[]
   moves: IMove[]
+  "$@"?: boolean
 }
 export interface IBaseTeam {
   uuid?: string
@@ -24,7 +26,7 @@ export abstract class BaseServer<IGame extends IBaseStateGame<any, any, any>, IG
   protected abstract move(state: IGameState, oldState: IGameState): void
   protected abstract buildInitialState(gameData: IGameData<any, IGameState, any>): IGameState
 
-  public stateBuffer:IGameState[] = [];
+  public stateBuffer: IGameState[] = [];
   public moveMade = new Subject<IGameState>();
   constructor(private game: IGame) { }
 
@@ -37,25 +39,64 @@ export abstract class BaseServer<IGame extends IBaseStateGame<any, any, any>, IG
     if (index >= 0)
       this.stateBuffer.length = index;
   }
+  private getLastState() {
+    return this.stateBuffer[this.stateBuffer.length - 1];
+  }
   public playTest(gameData: IGameData<any, IGameState, any>) {
+    gameData = this.cloneData(gameData);
     this.game.abandonState();
     if (gameData.states.length === 0)
-      gameData = this.initialize(gameData);
-    this.stateBuffer=gameData.states.map(state => this.cloneState(state));
-    this.setTeamIsUs(this.stateBuffer[this.stateBuffer.length-1]);
+      this.initialize(gameData);
+    this.stateBuffer = gameData.states;
+    const lastState = this.getLastState();
+    const usArray = this.usArrayFromState(lastState);
+    gameData.players.forEach((player, index) => player.id = usArray[index] ? "ASDFASDFASDF" : undefined);
+    gameData.states = gameData.states.map(state => this.cleansedState(state, usArray));
     this.game.setGameData(gameData);
+    //this.debugTeamIsUs();
+  }
+  public debugTeamIsUs() {
+    console.log("teams", JSON.stringify(this.game.teams.map(team => team.isUs()), null, 2))
   }
   public goToMove(moveNumber: number, teamIndex: number) {
     this.game.abandonState();
-    this.setTeamIsUs(teamIndex);
-    this.game.setState(this.getState(moveNumber));
+    const state = this.stateBuffer.find(state => state.moveNumber === moveNumber)!;
+    const usArray = state.teams.map((team, index) => index === teamIndex);
+    this.setTeamIsUs(usArray);
+    this.game.setState(this.prepState(state, usArray));
+    //this.debugTeamIsUs();
   }
-  protected cloneState(state: IGameState) {
-    return JSON.parse(JSON.stringify(state))
+  protected cloneData<T>(value: T): T {
+    return JSON.parse(JSON.stringify(value))
   }
-  protected current(moveNumber?: number) {
-    const buffer = this.stateBuffer;
-    return this.cloneState(typeof (moveNumber) === "number" ? buffer.find(state => state.moveNumber === moveNumber)! : buffer[buffer.length - 1]);
+  protected compareData(v1: any, v2: any) {
+    if (Array.isArray(v1)) {
+      if (!Array.isArray(v2) || v1.length !== v2.length)
+        return false;
+      if (v1 !== v2)
+        for (let i = 0; i < v1.length; i++)
+          if (!this.compareData(v1[i], v2[i]))
+            return false;
+      return true;
+    }
+    if (typeof (v1) === "object" && v1) {
+      if (typeof (v2) !== "object" || !v2)
+        return true;
+      const p1 = Object.getOwnPropertyNames(v1);
+      const p2 = Object.getOwnPropertyNames(v2);
+      if (p1.length !== p2.length)
+        return false;
+      for (let i = 0; i < p1.length; i++)
+        if (!p2.includes(p1[i]))
+          return false;
+      for (let i = 0; i < p1.length; i++) {
+        const p = p1[i];
+        if (!this.compareData(v1[p], v2[p]))
+          return false;
+      }
+      return true;
+    }
+    return v1 === v2;
   }
   protected clearTurns(state: IGameState) {
     state.teams.forEach(team => delete team.$T);
@@ -64,23 +105,22 @@ export abstract class BaseServer<IGame extends IBaseStateGame<any, any, any>, IG
     state.teams.forEach(team => delete team.$T);
     team.$T = true;
   }
-  private setTeamIsUs(using: IGameState | number) {
-    if (typeof (using) === "number")
-      for (let i = 0; i < this.game.teams.length; i++)
-        this.game.teams[i].uuid = i === using ? "ASDFASDFASDF" : undefined;
-    else
-      for (let i = 0; i < using.teams.length; i++)
-        this.game.teams[i].uuid = using.teams[i].$T ? "ASDFASDFASDF" : undefined;
+  private usArrayFromState(state: IGameState) {
+    return state.teams.map(state => state.$T);
+  }
+  private setTeamIsUs(usArray: boolean[]) {
+    this.game.teams.forEach((team, index) => team.player.id = usArray[index] ? "ASDFASDFASDF" : undefined);
   }
   protected pushState(clonedState: IGameState) {
     this.stateBuffer.push(clonedState);
     this.moveMade.next(clonedState);
-    this.setTeamIsUs(clonedState);
   }
-  public setState(state: IGameState, team: IBaseTeam) {
+  public setState(state: IGameState, team: IBaseTeam, isAutomatic: boolean = false) {
+    if (isAutomatic)
+      state["$@"] = true;
     this.truncate(state.moveNumber);
-    const oldState = this.current();
-    const newState = this.cloneState(state);
+    const oldState = this.getLastState();
+    const newState = this.cloneData(state);
     if (oldState)
       for (let i = 0; i < state.teams.length; i++) {
         const newTeamState = newState.teams[i];
@@ -93,19 +133,26 @@ export abstract class BaseServer<IGame extends IBaseStateGame<any, any, any>, IG
           if (!oldTeamState || oldTeamState.$_ === undefined)
             delete newTeamState.$_;
           else
-            newTeamState.$_ = oldTeamState.$_;
+            newTeamState.$_ = this.cloneData(oldTeamState.$_);
         }
       }
     this.move(newState, oldState);
     this.pushState(newState);
+    const usArray = this.usArrayFromState(newState);
+    this.setTeamIsUs(usArray);
   }
-  public getState(moveNumber?: number) {
-    const state = this.current(moveNumber);
-    for (let i = 0; i < state.teams.length; i++) {
-      const team = this.game.teams[i];
-      if (!team || !team.uuid)
+  public getState() {
+    const usArray = this.game.teams.map(team => team.isUs());
+    return this.prepState(this.getLastState(), usArray);
+  }
+  public prepState(state: IGameState, usArray: boolean[]) {
+    return this.cleansedState(state, usArray);
+  }
+  public cleansedState(state: IGameState, usArray: boolean[]) {
+    state = this.cloneData(state);
+    for (let i = 0; i < state.teams.length; i++)
+      if (!usArray[i])
         delete (state.teams[i].$_);
-    }
     return state;
   }
 

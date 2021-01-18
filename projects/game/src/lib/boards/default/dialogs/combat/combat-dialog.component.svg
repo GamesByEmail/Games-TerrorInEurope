@@ -90,5 +90,8 @@
       <text [style.display]="showFor(next)">Next</text>
       <text [style.display]="showFor(done)">Done</text>
     </g>
+    <g svg-dialog-button="flat"  [style.display]="showFor(canCancel)" width="180" (click)="cancel()">
+      <text>Cancel</text>
+    </g>
   </g>
 </svg>
