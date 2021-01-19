@@ -1,6 +1,10 @@
 import { Subject } from "rxjs";
 import { IBaseMove, IGameData } from "@gamesbyemail/base";
 
+interface ISecureRandom {
+  t: string
+  v: number
+}
 export interface IBaseTeamState {
   $T?: boolean // myTurn, should default to false.
   $P?: boolean // playing, should default to true.
@@ -12,6 +16,7 @@ export interface IBaseGameState<ITeamState extends IBaseTeamState, IMove extends
   teams: ITeamState[]
   moves: IMove[]
   "$@"?: boolean
+  "$#"?: ISecureRandom[]
 }
 export interface IBaseTeam {
   uuid?: string
@@ -69,13 +74,13 @@ export abstract class BaseServer<IGame extends IBaseStateGame<any, any, any>, IG
   protected cloneData<T>(value: T): T {
     return JSON.parse(JSON.stringify(value))
   }
-  protected compareData(v1: any, v2: any) {
+  protected objectsEqual(v1: any, v2: any) {
     if (Array.isArray(v1)) {
       if (!Array.isArray(v2) || v1.length !== v2.length)
         return false;
       if (v1 !== v2)
         for (let i = 0; i < v1.length; i++)
-          if (!this.compareData(v1[i], v2[i]))
+          if (!this.objectsEqual(v1[i], v2[i]))
             return false;
       return true;
     }
@@ -91,7 +96,7 @@ export abstract class BaseServer<IGame extends IBaseStateGame<any, any, any>, IG
           return false;
       for (let i = 0; i < p1.length; i++) {
         const p = p1[i];
-        if (!this.compareData(v1[p], v2[p]))
+        if (!this.objectsEqual(v1[p], v2[p]))
           return false;
       }
       return true;
@@ -115,14 +120,42 @@ export abstract class BaseServer<IGame extends IBaseStateGame<any, any, any>, IG
     this.stateBuffer.push(clonedState);
     this.moveMade.next(clonedState);
   }
-  public setState(state: IGameState, team: IBaseTeam, isAutomatic: boolean = false) {
+  public rollDie(max: number = 6, min: number = 1) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  public getSecureRandom(type: string): ISecureRandom {
+    let value = 0;
+    switch (type) {
+      case "D6":
+        value = this.rollDie();
+        break;
+    }
+    return { t: type, v: value };
+  }
+  public processNewState(state: IGameState, isAutomatic: boolean = false) {
+    const secureRandom: ISecureRandom[] = [];
+    state = JSON.parse(JSON.stringify(state).replace(/"(?:\\x01|\\u0001)(\w+)"/g, ($0, $1) => {
+      console.log($0,$1);
+      const value = this.getSecureRandom($1);
+      secureRandom.push(value);
+      return value.v.toString();
+    }));
     if (isAutomatic)
       state["$@"] = true;
+    else
+      delete state["$@"];
+    if (secureRandom.length > 0)
+      state["$#"] = secureRandom;
+    else
+      delete state["$#"];
+    return state;
+  }
+  public setState(state: IGameState, team: IBaseTeam, isAutomatic: boolean = false) {
+    const newState = this.processNewState(state, isAutomatic);
     this.truncate(state.moveNumber);
     const oldState = this.getLastState();
-    const newState = this.cloneData(state);
     if (oldState)
-      for (let i = 0; i < state.teams.length; i++) {
+      for (let i = 0; i < newState.teams.length; i++) {
         const newTeamState = newState.teams[i];
         if (!newTeamState.$T)
           delete newTeamState.$T;

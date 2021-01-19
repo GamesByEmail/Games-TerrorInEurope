@@ -7,7 +7,10 @@ export class Recruit extends Token {
   public readonly type = ETokenType.RECRUIT
   public readonly title = "Recruiting Cell"
   svgId() {
-    return "#Recruit";
+    return "#Recruit" + (
+      this.result === ETokenResult.WON ? "Success" :
+        this.result === ETokenResult.LOST ? "Fail" :
+          "");
   }
   isCovertOps(){
     return true;

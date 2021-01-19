@@ -1,13 +1,13 @@
-import { Component, Input, ElementRef, ViewChild, AfterViewInit, ViewContainerRef, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, ElementRef, ViewChild, AfterViewInit, ViewContainerRef, ChangeDetectorRef, NgZone } from '@angular/core';
 import { trigger, state, style, animate, transition, sequence } from '@angular/animations';
 
 import { BoardService } from '@gamesbyemail/base';
 
 import { Territory } from '../../../game/territory';
 import { Game } from '../../../game/game';
-import { fromEvent, Subscription, Observable, Subject, race } from 'rxjs';
-import { switchMap, map, takeUntil, finalize } from 'rxjs/operators';
-import { Point2D, Rectangle2D } from '@packageforge/geometry2d';
+import { fromEvent, Subscription, Observable, Subject, merge } from 'rxjs';
+import { map, finalize, tap } from 'rxjs/operators';
+import { Rectangle2D } from '@packageforge/geometry2d';
 import { Piece } from '../../../game/piece';
 import { cityMapData, IMapPoint } from './city-map-data';
 import { CovertOpsDialogService } from '../dialogs/covert-ops/covert-ops-dialog.service';
@@ -72,25 +72,51 @@ export class BoardComponent implements AfterViewInit {
   }
   @ViewChild('boardArea') boardArea!: ElementRef<SVGElement>;
   @ViewChild('dialogArea', { read: ViewContainerRef }) dialogArea!: ViewContainerRef;
-  @ViewChild('dialogOverlay', { read: ElementRef }) dialogOverlay!: ElementRef;
+  @ViewChild('dialogOverlay', { read: ElementRef }) dialogOverlay!: ElementRef<SVGRectElement>;
   @ViewChild('pieceLibrary') pieceLibrary!: any;
+  @ViewChild('mover', { read: ElementRef }) mover!: ElementRef<SVGGElement>;
 
   mousemove: Observable<MouseEvent> = <any>fromEvent(document, 'mousemove');
   mouseup: Observable<any> = fromEvent(document, 'mouseup').pipe(map(() => undefined));
   territoryUp: Subject<Territory> = new Subject();
-
   viewBox: Rectangle2D = new Rectangle2D(0, 0, 100, 100);
-  constructor(private cd: ChangeDetectorRef, private boardService: BoardService,
+
+  constructor(
+    private cd: ChangeDetectorRef,
+    private boardService: BoardService,
     private covertOpsDialogService: CovertOpsDialogService,
     private combatDialogService: CombatDialogService,
-    private informantNetworkDialogService: InformantNetworkDialogService
+    private informantNetworkDialogService: InformantNetworkDialogService,
+    element: ElementRef,
+    _ngZone: NgZone
+
   ) {
+    _ngZone.runOutsideAngular(() => {
+      merge(
+        fromEvent<MouseEvent>(element.nativeElement, "mousemove"),
+        fromEvent<MouseEvent>(element.nativeElement, "mouseout"),
+        fromEvent<MouseEvent>(element.nativeElement, "mouseover")
+      )
+        .subscribe(event => {
+          if (this.mover && this.mover.nativeElement) {
+            if (event.type === "mouseout")
+              this.mover.nativeElement.style.display = "none";
+            this.mover.nativeElement.setAttribute("transform", "translate(" + event.offsetX + " " + event.offsetY + ")");
+            if (event.type !== "mouseout")
+              this.mover.nativeElement.style.display = "";
+          }
+        });
+    });
   }
   subscription!: Subscription;
   overlayPoly!: string;
   ngAfterViewInit() {
     this.game.board.setController(this);
     this.cd.detectChanges();
+  }
+  digest() {
+    console.log("digest");
+    return "";
   }
   get perspectiveTeam() {
     return this.game.findTeam(this.game.perspective);
@@ -119,22 +145,22 @@ export class BoardComponent implements AfterViewInit {
     const point = pointFnc();
     this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
     let ref = this.covertOpsDialogService.open(this.dialogArea, { operative: operative, token: token }, this.dialogOverlay);
-    return ref.afterClosed().pipe(finalize(()=>ref.close()));
+    return ref.afterClosed().pipe(finalize(() => ref.close()));
   }
   openCombat(attacker: Team, defenders: Team[], pointFnc: () => IMapPoint) {
     const point = pointFnc();
     this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
     let ref = this.combatDialogService.open(this.dialogArea, { attacker: attacker, defenders: defenders }, this.dialogOverlay);
-    return ref.afterClosed().pipe(finalize(()=>ref.close()));
+    return ref.afterClosed().pipe(finalize(() => ref.close()));
   }
   openInformantNetwork(informant: Team, pointFnc: () => IMapPoint) {
     const point = pointFnc();
     this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
     let ref = this.informantNetworkDialogService.open(this.dialogArea, { informant: informant }, this.dialogOverlay);
-    return ref.afterClosed().pipe(finalize(()=>ref.close()));
+    return ref.afterClosed().pipe(finalize(() => ref.close()));
   }
   tokenClass(token: Token) {
     return { aged: token.result === ETokenResult.AGED, won: token.result === ETokenResult.WON, lost: token.result === ETokenResult.LOST };
   }
-  ETokenType=ETokenType
+  ETokenType = ETokenType
 }

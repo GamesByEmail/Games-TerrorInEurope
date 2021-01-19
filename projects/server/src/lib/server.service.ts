@@ -1,5 +1,5 @@
 import { BaseServer } from "./base.server";
-import { ETokenType, ETokenVisibility, IOpsState, ITerrState, ITokenState } from "projects/game/src/lib/game/team-state";
+import { ETokenResult, ETokenType, ETokenVisibility, IOpsState, ITerrState, ITokenState } from "projects/game/src/lib/game/team-state";
 import { Game, IGameOptions, IGameState } from "projects/game/src/lib/game/game";
 import { IGameData } from "@gamesbyemail/base";
 import { TeamId } from "projects/game/src/lib/game/team-id";
@@ -21,18 +21,16 @@ export class ServerService extends BaseServer<Game, IGameState> {
   protected move(state: IGameState, oldState: IGameState) {
     if (!oldState)
       return;
-    if (oldState.teams[3].$T && oldState.teams[4].$T && !state["$@"]) {
+    if (state.teams[3].$T && oldState.teams[3].$T) {
       const infoState = state.teams[3];
-      if (infoState.a < state.moveNumber - 1) {
-        infoState.a = state.moveNumber;
-        const terrState = state.teams[4];
-        this.ageTokens(terrState);
-        if (terrState.t && terrState.t.length === 0)
-          delete terrState.t;
-        if (terrState.t && !this.compareData(terrState.t, oldState.teams[4].t)) {
-          delete state.teams[4].$T;
-          state.teams[3].$T = true;
-        }
+      infoState.a = state.moveNumber;
+      const terrState = state.teams[4];
+      this.ageTokens(terrState);
+      if (terrState.t && terrState.t.length === 0)
+        delete terrState.t;
+      if (!terrState.t || this.allTokensBenign(terrState.t)) {
+        delete state.teams[3].$T;
+        state.teams[4].$T = true;
       }
     } else {
       const tState = state.teams[4];
@@ -65,7 +63,7 @@ export class ServerService extends BaseServer<Game, IGameState> {
     if (!tState.t)
       tState.t = [];
     this.ageTokensList(tState.t, 3);
-    tState.t = tState.t.filter(t => vTokens.find(v => t.c === v.c));
+    tState.t = tState.t.filter(t => !vTokens.find(v => t.c === v.c));
     tState.t.push(...vTokens);
   }
   private ageTokensList(tokens: ITokenState[], maxAge: number) {
@@ -111,5 +109,16 @@ export class ServerService extends BaseServer<Game, IGameState> {
       }
     }
     return count;
+  }
+  allTokensBenign(tokens: ITokenState[]) {
+    let benign = true;
+    tokens.forEach(token => {
+      if (token.r === ETokenResult.UNDEFINED)
+        if (token.t === ETokenType.TRAP)
+          token.r = ETokenResult.AGED;
+        else if (token.t === ETokenType.BOMB || token.t === ETokenType.RECRUIT)
+          benign = false;
+    });
+    return benign;
   }
 }

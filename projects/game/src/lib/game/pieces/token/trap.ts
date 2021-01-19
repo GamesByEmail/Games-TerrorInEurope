@@ -7,7 +7,9 @@ export class Trap extends Token {
   public readonly type = ETokenType.TRAP
   public readonly title = "Trap"
   svgId() {
-    return "#Trap";
+    return "#Trap" + (
+      this.result === ETokenResult.AGED ? "Aged" :
+        "");
   }
   isCovertOps(){
     return true;

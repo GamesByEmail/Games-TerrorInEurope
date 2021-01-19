@@ -19,6 +19,9 @@
 :host {
   user-select: none;
 }
+.mover {
+  pointer-events: none;
+}
 .waterText text {
   font-family: Felipa;
   font-size: 32px;

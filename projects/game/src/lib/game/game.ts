@@ -26,6 +26,7 @@ export interface IGameSave extends IBaseGameSave<Game, IGameOptions, IGameState,
   header: string;
 }
 export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Board, undefined, IBoardSave, Territory, undefined, ITerritorySave, Team, TeamId, ITeamState, ITeamSave, Move, IModMove> {
+  moving=false;
   constructor() {
     super();
     this._board = new Board(this);
@@ -33,6 +34,9 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
     Object.freeze(this._teams);
   }
   header: string = "";
+  public $$$rollDie(max: number = 6, min: number = 1):number {
+    return <number><unknown>"\x01D6";
+  }
 
   private stateAbandon = new Subject();
   abandonState() {
@@ -45,6 +49,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
       .pipe(filter(open => !open), take(1))
       .pipe(takeUntil(this.stateAbandon))
       .subscribe(o => {
+        this.moving=false;
         this._moveNumber = -1;
         this.board.clear();
         this.board.setState();
@@ -152,6 +157,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   }
   beginMeepleMove(team: Team) {
     this.clearRolls();
+    this.moving=true;
     const availableMoves = team.city ? team.availableMoves() : this.board.territories;
     availableMoves.forEach(c => c.canSelect = true);
   }
@@ -168,7 +174,6 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
       .pipe(takeUntil(this.stateAbandon))
       .subscribe(question => {
         this.modalOpen.next(false);
-        this.incrementTurn();
         this.saveIt(informant);
       });
   }
@@ -208,6 +213,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
     this.board.territories.forEach(c => c.showTokenSelect = false);
   }
   moveHere(city: Territory, tokenType?: ETokenType) {
+    //this.moving=false;
     const turnTeam = this.findTurnTeam()!;
     if (turnTeam.isTerrorist()) {
       const token = createToken(this.board.game, tokenType || ETokenType.MARKER);

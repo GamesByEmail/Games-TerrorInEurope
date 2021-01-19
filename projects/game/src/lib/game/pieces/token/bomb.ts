@@ -7,9 +7,12 @@ export class Bomb extends Token {
   public readonly type = ETokenType.BOMB
   public readonly title = "Bomb"
   svgId() {
-    return "#Bomb";
+    return "#Bomb" + (
+      this.result === ETokenResult.WON ? "Exploded" :
+        this.result === ETokenResult.LOST ? "Defused" :
+          "");
   }
-  isCovertOps(){
+  isCovertOps() {
     return true;
   }
   aged() {

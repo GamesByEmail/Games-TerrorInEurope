@@ -145,6 +145,20 @@
           8,-37 4,-31 6,-24 10,-30
           " />
 </g>
+<g id="ExplosionMuted">
+  <polygon stroke="rgb(0,0,0)" stroke-width="2" fill="rgb(169, 159, 153)" points="
+    -8,-31 -9,-12 -30,-12 -15,-2 -32,12 -12,10 -15,33 2,13 28,27 18,5
+    29,-2 16,-8 19,-24 4,-17
+    "/>
+  <polygon stroke="rgb(182, 176, 169)" stroke-width="2" fill="rgb(197, 192, 184)" points="
+    -5,-23 -6,-9 -21,-9 -11,-2 -23,8 -10,7 -10,22 1,10 20,19 13,3
+    22,-2 12,-6 15,-18 3,-13
+    "/>
+  <polygon stroke="rgb(203, 199, 190)" stroke-width="2" fill="rgb(224, 221, 215)" points="
+    -3,-16 -4,-7 -12,-6 -6,-3 -15,5 -7,4 -8,14 0,6 12,12 10,1
+    13,-1 8,-5 10,-11 3,-8
+    "/>
+</g>
 <g id="Trap">
   <use href="#Token" />
   <use href="#Explosion" />
@@ -175,8 +189,7 @@
   <use href="#RecruitOutline" x="4" y="25" />
 </g>
 <path id="Fuse" d="M -2,-19 C -6,-31 -11,-30 -17,-29 S -34,-21 -26,-8 S -29,5 -30,10" fill="none" />
-<g id="Bomb">
-  <use href="#Token" />
+<g id="BombCase">
   <circle cx="8" cy="6" r="29" stroke="none" fill="rgb(0,0,0)" />
   <ellipse cx="1" cy="-12" rx="16" ry="8" stroke="none" fill="rgb(102,102,102)" transform="rotate(-17)"
     transform-origin="1 -12" />
@@ -185,10 +198,129 @@
     transform-origin="-2 -19" />
   <ellipse cx="-2" cy="-19" rx="3" ry="1" stroke="none" fill="rgb(0,0,0)" transform="rotate(-17)"
     transform-origin="-2 -19" />
+</g>
+<g id="Bomb">
+  <use href="#Token" />
+  <use href="#BombCase" />
   <use href="#Explosion" x="-31" y="10" transform="scale(0.25)" transform-origin="-31 10" />
   <use href="#Fuse" stroke="rgb(0,0,0)" stroke-width="4" fill="none" />
   <use href="#Fuse" stroke="rgb(187,145,85)" stroke-width="2" fill="none" />
 </g>
+<g id="BombExploded">
+  <use href="#Token"/>
+  <use href="#Explosion" transform="scale(1.15)"/>
+  <polygon points="
+  -15,-42 -24,-42 -26,-40 -27,-37 -27,-36 -26,-35 -30,-31 -27,-31 -26,-29 -24,-29
+  -24,-26 -26,-24 -27,-22 -27,-21 -25,-20 -22,-20 -21,-18 -19,-18 -19,-16 -20,-15
+  -15,-15 -15,-16 -19,-20 -12,-21 -8,-22 -7,-23 -6,-24 -8,-26 -13,-28 -7,-31
+  -8,-35 -10,-35 -11,-37 -13,-39 -13,-40
+  " stroke="rgb(255,0,0)" stroke-width="1" fill="rgb(0,0,0)"/>
+  <polygon points="
+  -43,-13 -45,-9 -46,-2 -47,1 -47,7 -45,11 -43,17 -40,21 -38,21 -35,18
+  -31,14 -31,12 -34,12 -31,9 -31,8 -34,5 -34,3 -32,1 -35,-2 -41,-3
+  -41,-4 -37,-8 -37,-10 -39,-11 -40,-13
+  " stroke="rgb(255,0,0)" stroke-width="1" fill="rgb(0,0,0)"/>
+  <polygon points="
+  -1,14 -7,16 -14,17 -10,20 -10,22 -16,23 -13,27 -13,29 -15,31 -13,31
+  -12,33 -15,36 -17,36 -22,40 -18,44 -10,47 -4,48 0,49 5,49 10,48
+  16,45 17,44 16,42 16,40 14,37 12,36 8,33 6,32 3,28 3,26
+  4,25 9,25 10,22 10,20 8,18 3,18 0,14
+  " stroke="rgb(255,0,0)" stroke-width="1" fill="rgb(0,0,0)"/>
+  <polygon points="
+  44,-12 42,-12 42,-9 41,-8 41,-6 36,-7 35,-5 33,-5 33,-2 38,2
+  39,4 39,9 34,9 30,12 26,12 24,12 25,13 30,18 36,21 37,24
+  39,30 42,26 45,21 47,16 48,11 49,3 49,-2 47,-7 45,-10
+  " stroke="rgb(255,0,0)" stroke-width="1" fill="rgb(0,0,0)"/>
+  <polygon points="
+  7,-45 -1,-46 -2,-44 -3,-42 1,-40 1,-38 5,-34 5,-31 7,-30 3,-29
+  1,-28 4,-25 6,-25 7,-23 10,-18 17,-18 18,-17 18,-14 15,-12 18,-13
+  24,-13 24,-17 23,-20 19,-24 18,-27 21,-27 22,-29 26,-29 28,-35 25,-38
+  21,-41 15,-43 10,-44
+  " stroke="rgb(255,0,0)" stroke-width="1" fill="rgb(0,0,0)"/>
+  <polygon points="
+  0,-11 -7,-12 -7,-4 -9,4 -6,8 -2,1 4,9 16,15 19,6 9,2
+  13,-3 17,-9 6,-7 6,-13 1,-12                                                                                
+  " stroke="rgb(255,0,0)" stroke-width="1" fill="rgb(0,0,0)"/>
+</g>  
+<g id="BombDefused">
+  <use href="#Token"/>
+  <g transform="translate(5 5)">
+    <use href="#BombCase"/>
+    <g transform="scale(-1,1) rotate(40) translate(-6,-13)">
+      <use href="#Fuse" stroke="rgb(0,0,0)" stroke-width="4" fill="none"/>
+      <use href="#Fuse" stroke="rgb(187,145,85)" stroke-width="2" fill="none"/>
+    </g>
+    <path id="PlierHalf" d="
+    M -20,-37
+    L -23,-24
+    A 28 28 0 0 1 -29,9
+    A 2 2 0 0 1 -33,5
+    A 21 21 0 0 0 -28,-21
+    A 15 15 0 0 1 -23,-38
+    A 2 2 0 0 1 -20,-37
+    " stroke="rgb(0,0,0)" stroke-width="1" fill="rgb(40,40,40)"/>
+    <use href="#PlierHalf" transform="scale(-1,1) translate(53 -38) rotate(-70)" transform-origin="-25, -22"/>
+    <circle cx="-25" cy="-22" r="2" stroke="none" fill="rgb(0,0,0)"/>
+  </g>
+</g>
+<g id="AK47">
+  <polygon points="
+  -106,-41 -126,-36 -119,-12 -100,-15
+  " stroke="rgb(0,0,0)" stroke-width="6" fill="grey"/>
+  <polygon points="
+  -126,-36 -163,-30 -174,-35 -268,-16 -254,51 -118,-10
+  " stroke="rgb(0,0,0)" stroke-width="6" fill="rgb(142,86,71)"/>
+  <polygon points="
+  -102,-15 -103,-6 -100,-1 -100,5 -114,43 -108,51 -97,55 -85,53 -85,44 -70,8
+  -63,1 -63,-16
+  " stroke="rgb(0,0,0)" stroke-width="6" fill="rgb(142,86,71)"/>
+  <polygon points="
+  -31,-17 -30,1 -20,0 -18,-2 -18,-10 -11,-9 -11,-24
+  " stroke="rgb(0,0,0)" stroke-width="6" fill="rgb(47,53,75)"/>
+  <path d="
+  M -14,-17
+  A 150 150 0 0 0 58,92
+  L 78,59
+  A 104 104 0 0 1 25,-20
+  " stroke="rgb(0,0,0)" stroke-width="6" fill="rgb(65,62,71)"/>
+  <polyline points="
+  -64,0 -62,4 -57,7 -35,6 -31,5 -27,-1
+  " stroke="rgb(0,0,0)" stroke-width="6" fill="none"/>
+  <polygon points="
+  -58,-15 -56,-5 -54,-1 -48,2 -47,0 -50,-2 -53,-5 -54,-15
+  " stroke="rgb(0,0,0)" stroke-width="6" fill="rgb(69,72,79)"/>
+  <polygon points="
+  154,-33 160,-31 161,-33 168,-33 169,-35 204,-36 204,-32 227,-31 229,-36 265,-37
+  266,-36 273,-35 273,-30 281,-30
+  286,-34 287,-36 294,-37 294,-45 287,-45 285,-53 285,-74
+  275,-74 275,-67 266,-45 230,-45 219,-49 211,-62
+  161,-63 157,-66 151,-64
+  " stroke="rgb(0,0,0)" stroke-width="6" fill="rgb(136,130,132)"/>
+  <polygon points="
+  55,-26 62,-16 69,-16 90,-21 131,-23 158,-29 155,-66 88,-67 80,-59 49,-49                
+  " stroke="rgb(0,0,0)" stroke-width="6" fill="rgb(158,92,76)"/>
+  <polygon points="
+  -96,-59 -110,-39 -112,-23 -101,-9 59,-20 60,-42 85,-44 84,-67 42,-68 38,-60
+  " stroke="rgb(0,0,0)" stroke-width="6" fill="rgb(136,130,132)"/>
+  </g>
+  <g id="RecruitSuccess">
+    <use href="#Recruit"/>
+    <use href="#AK47" transform="translate(-3,1) scale(0.17) rotate(-45)"/>
+  </g>
+  <g id="RecruitFail">
+    <use href="#Recruit"/>
+    <line id="Bar" x1="0" y1="-38" x2="0" y2="38" stroke-width="2" stroke="rgb(30,30,30)"/>
+    <use href="#Bar" x="-10"/>
+    <use href="#Bar" x="-20"/>
+    <use href="#Bar" x="-30"/>
+    <use href="#Bar" x="10"/>
+    <use href="#Bar" x="20"/>
+    <use href="#Bar" x="30"/>
+  </g>
+  <g id="TrapAged">
+    <use href="#Token"/>
+    <use href="#ExplosionMuted"/>
+  </g>
 <g id="Marker">
   <use href="#Token" />
 </g>

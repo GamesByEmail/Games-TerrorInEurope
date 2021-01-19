@@ -1,5 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 1710 1615" style="width:1710px;height:1615px" (click)="game.clearModal($event)">
-  <defs gamesbyemail-games-terrorInEurope-default-piecelibrary #pieceLibrary></defs>
+    <!--
+    {{digest()}}
+    -->
+    <defs gamesbyemail-games-terrorInEurope-default-piecelibrary #pieceLibrary></defs>
     <defs>
       <path id="Anchor" d="
         M -1,-9
@@ -845,7 +848,7 @@
           <use *ngIf="territory.mapData.anchor" class="anchor" href="#Anchor" [attr.x]="territory.mapData.anchor.x" [attr.y]="territory.mapData.anchor.y" />
           <text *ngFor="let title of territory.mapData.titles" class="cityText" [ngClass]="territory.mapData.titleClass!" [attr.x]="title.location.x" [attr.y]="title.location.y">{{title.title}}</text>
           <g *ngFor="let piece of territory.pieces" [attr.transform]="'translate('+(piece.offset*20)+' 0)'">
-            <g *ngIf="piece.isMeeple()" [ngClass]="{fade:game.doneSettingUp() &amp;&amp; territory.canSelect &amp;&amp; !piece.isOurTurn()}">
+            <g *ngIf="piece.isMeeple()" [ngClass]="{fade:game.moving &amp;&amp; piece.isOurTurn()}">
               <use [attr.href]="piece.svgId()" (click)="territory.click($event)"/>
               <text *ngIf="piece.team.isAlive()" x="-15" class="strengthText">{{piece.team.strength}}</text>
             </g>
@@ -863,6 +866,12 @@
         </g>
       </g>
     </g>
+
+    <g *ngIf="game.moving" #mover class="mover" style="display:none">
+      <use [attr.href]="game.findTurnTeam()!.meepleId"/>
+      <text x="-15" class="strengthText">{{game.findTurnTeam()!.strength}}</text>
+    </g>
+
     <rect #dialogOverlay x="0" y="0" width="100%" height="1515" fill="rgba(0,0,0,0.4)" style="display:none" />
     <g>
       <g #dialogArea></g>
