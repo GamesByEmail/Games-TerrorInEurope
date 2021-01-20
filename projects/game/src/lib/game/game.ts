@@ -122,7 +122,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
         }
       });
   }
-  resolveCombat(attacker: Team, defenders: Team[], mustAge: boolean = true) {
+  resolveCombat(attacker: Team, defenders: Team[], mustAgeIfCombatBreak: boolean = true) {
     this.modalOpen.next(true);
     this.board.openCombat(attacker, defenders, () => attacker.city.mapData.location)
       .pipe(takeUntil(this.stateAbandon))
@@ -144,9 +144,10 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
         } else {
           if (opponent === false)
             this.restore();
+          else
+            if (mustAgeIfCombatBreak)
+              this.ageAllTokens(true);
           this.save();
-          if (mustAge)
-            this.ageAllTokens(true);
           this.beginMeepleMove(attacker);
         }
       });
@@ -278,13 +279,13 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
       const token = createToken(this.board.game, tokenType || ETokenType.MARKER);
       token.changeTerritory(city);
     }
-    const hadOperative = turnTeam.city && turnTeam.city.hasOperative();
+    const mustAgeIfCombatBreak = turnTeam.city && turnTeam.city.hasOperative(true);
     if (city === turnTeam.city)
       turnTeam.setStrength(100);
     else
       turnTeam.city = city;
     if (turnTeam.isTerrorist() && city.hasOperative(true))
-      this.resolveCombat(turnTeam, city.findOperatives(), hadOperative);
+      this.resolveCombat(turnTeam, city.findOperatives(), mustAgeIfCombatBreak);
     else {
       this.incrementTurn();
       this.saveIt(turnTeam);
