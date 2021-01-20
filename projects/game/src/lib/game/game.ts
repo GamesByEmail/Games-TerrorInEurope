@@ -270,7 +270,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
     this.board.territories.forEach(c => c.showTokenSelect = false);
   }
   moveHere(city: Territory, tokenType?: ETokenType) {
-    //this.moving=false;
+    this.moving = false;
     const turnTeam = this.findTurnTeam()!;
     if (turnTeam.isInformantNetwork())
       return this.completeInformantSearch(city.index);
