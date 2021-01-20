@@ -33,6 +33,15 @@ export class TestGameService {
       let data = window.localStorage.getItem(this.localStorageKey);
       if (data) {
         this.gameData = JSON.parse(data);
+        this.gameData.states = this.gameData.states
+          .filter((state, index, a) => {
+            for (let i = a.length - 1; i > index; i--)
+              if (a[i].moveNumber === state.moveNumber) {
+                console.error("REMOVING DUP STATE " + state.moveNumber);
+                return false;
+              }
+            return true;
+          });
         this.recoverAnnotations();
       }
     } catch (e) {
@@ -52,6 +61,9 @@ export class TestGameService {
         this.game.server.moveMade
           .pipe(filter(() => !this.resetting))
           .pipe(mergeMap(state => {
+            const trunc = this.gameData.states.findIndex(s => s.moveNumber === state.moveNumber);
+            if (trunc >= 0)
+              this.gameData.states.length = trunc;
             const sIndex = this.gameData.states.length;
             this.gameData.states.push(state);
             const pair = {

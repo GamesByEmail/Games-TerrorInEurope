@@ -135,7 +135,6 @@ export abstract class BaseServer<IGame extends IBaseStateGame<any, any, any>, IG
   public processNewState(state: IGameState, isAutomatic: boolean = false) {
     const secureRandom: ISecureRandom[] = [];
     state = JSON.parse(JSON.stringify(state).replace(/"(?:\\x01|\\u0001)(\w+)"/g, ($0, $1) => {
-      console.log($0,$1);
       const value = this.getSecureRandom($1);
       secureRandom.push(value);
       return value.v.toString();
