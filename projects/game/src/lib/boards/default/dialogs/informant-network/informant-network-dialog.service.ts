@@ -1,12 +1,15 @@
 import { Injectable, ViewContainerRef, ElementRef } from '@angular/core';
 import { SvgDialogService, SvgDialogRef } from '@packageforge/svg-dialog';
 import { Team } from 'projects/game/src/lib/game/team';
+import { ESearchType } from 'projects/game/src/lib/game/team-state';
 import { InformantNetworkDialogComponent } from './informant-network-dialog.component';
 
 export interface IInformantNetworkDialogData {
   informant: Team
+  regionSearchable: boolean
+  allSearchable: boolean
 }
-export type IInformantNetworkDialogResult = undefined;
+export type IInformantNetworkDialogResult = ESearchType;
 
 @Injectable({
   providedIn: 'root'

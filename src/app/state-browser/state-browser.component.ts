@@ -1,8 +1,7 @@
 import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { IGameState } from 'projects/game/src/lib/game/game';
-import { Subject, timer } from 'rxjs';
-import { fromEvent } from 'rxjs/internal/observable/fromEvent';
+import { Subject, timer, fromEvent } from 'rxjs';
 import { filter, takeUntil, takeWhile } from 'rxjs/operators';
 import { annotatedJson } from '@packageforge/annotated-json';
 

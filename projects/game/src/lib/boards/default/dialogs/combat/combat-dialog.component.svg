@@ -12,27 +12,27 @@
   </g>
   <g transform="translate(0 115)">
     <g transform="translate(100 0)">
-      <use [attr.href]="combatantHref()"/>
-      <text x="-15" y="-25"  [style.display]="showFor(combatantStrength())" class="stengthText">{{combatantStrength()}}</text>
+      <use [attr.href]="combatantHref()" />
+      <text x="-15" y="-25" [style.display]="showFor(combatantStrength())" class="stengthText">{{combatantStrength()}}</text>
       <text x="15" y="-25" [style.display]="showFor(combatantModifier())" class="modifierText">{{combatantModifier()}}</text>
     </g>
     <g [attr.transform]="combatantTransform(320,2)">
       <g [class]="combatantClass(2)">
-        <use [attr.href]="combatantHref(2)" (click)="defenderClick(2)"/>
+        <use [attr.href]="combatantHref(2)" (click)="defenderClick(2)" />
         <text x="-15" y="-25" [style.display]="showFor(combatantStrength(2))" class="stengthText">{{combatantStrength(2)}}</text>
         <text x="15" y="-25" [style.display]="showFor(combatantModifier(2))" class="modifierText">{{combatantModifier(2)}}</text>
       </g>
     </g>
     <g [attr.transform]="combatantTransform(255,1)">
       <g [class]="combatantClass(1)">
-        <use [attr.href]="combatantHref(1)" (click)="defenderClick(1)"/>
+        <use [attr.href]="combatantHref(1)" (click)="defenderClick(1)" />
         <text x="-15" y="-25" [style.display]="showFor(combatantStrength(1))" class="stengthText">{{combatantStrength(1)}}</text>
         <text x="15" y="-25" [style.display]="showFor(combatantModifier(1))" class="modifierText">{{combatantModifier(1)}}</text>
       </g>
     </g>
     <g [attr.transform]="combatantTransform(190,0)">
       <g [class]="combatantClass(0)">
-        <use [attr.href]="combatantHref(0)" (click)="defenderClick(0)"/>
+        <use [attr.href]="combatantHref(0)" (click)="defenderClick(0)" />
         <text x="-15" y="-25" [style.display]="showFor(combatantStrength(0))" class="stengthText">{{combatantStrength(0)}}</text>
         <text x="15" y="-25" [style.display]="showFor(combatantModifier(0))" class="modifierText">{{combatantModifier(0)}}</text>
       </g>
@@ -47,13 +47,13 @@
 
   <g [style.display]="showFor(rolls)" transform="translate(0 185)">
     <g transform="translate(60 0)">
-      <use [attr.href]="dieHref('a')" [attr.style]="dieStyle('a')"/>
+      <use [attr.href]="dieHref('a')" [attr.style]="dieStyle('a')" />
       <text x="35" class="equationText"> + {{eval(rolls,'a.m')}} = <tspan class="totalText">{{eval(rolls,'a.t')}}</tspan></text>
     </g>
     <g [attr.transform]="'translate('+(210+defenders.indexOf(defender)*35)+' 0)'">
-      <use [attr.href]="dieHref('d')" [attr.style]="dieStyle('d')"/>
+      <use [attr.href]="dieHref('d')" [attr.style]="dieStyle('d')" />
       <text x="35" class="equationText"> + {{eval(rolls,'d.m')}} = <tspan class="totalText">{{eval(rolls,'d.t')}}</tspan></text>
-   </g>
+    </g>
     <g transform="translate(210 50)">
       <text [style.display]="showFor(rolls,'l.s&gt;0')" class="result" text-anchor="middle">The {{eval(rolls,'l.c.meepleTitle')}} lost <tspan class="equationInline">{{eval(rolls,'l.d')}}</tspan> strength and {{pluralForm('is',eval(rolls,'l.c.meepleTitle'))}} now at <tspan class="strengthInline">{{eval(rolls,'l.s')}}</tspan> strength.</text>
       <text [style.display]="showFor(rolls,'l.s===0')" class="result" text-anchor="middle">The {{eval(rolls,'l.c.meepleTitle')}} lost <tspan class="equationInline">{{eval(rolls,'l.d')}}</tspan> strength and {{pluralForm('was',eval(rolls,'l.c.meepleTitle'))}} killed.</text>

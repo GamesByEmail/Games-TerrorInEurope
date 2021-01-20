@@ -11,7 +11,7 @@ import { ITemplateLibrary, ITemplateSize, TemplateLibraryService } from '@packag
 })
 export class PiecesComponent implements ITemplateLibrary, AfterViewInit {
   @ViewChildren(TemplateRef) templateRefs!: QueryList<TemplateRef<any>>;
-  constructor(private templateLibraryService: TemplateLibraryService, private location:Location ) {
+  constructor(private templateLibraryService: TemplateLibraryService, private location: Location) {
   }
   private initDefer = new Deferred();
   ngAfterViewInit(): void {
@@ -28,8 +28,8 @@ export class PiecesComponent implements ITemplateLibrary, AfterViewInit {
   getSize(template: TemplateRef<any> | undefined): ITemplateSize | undefined {
     return this.templateLibraryService.getTemplateSize(template);
   }
-  url(url:string){
-    console.log("url("+this.location.path()+url+")");
-    return "url("+this.location.path()+url+")";
+  url(url: string) {
+    console.log("url(" + this.location.path() + url + ")");
+    return "url(" + this.location.path() + url + ")";
   }
 }

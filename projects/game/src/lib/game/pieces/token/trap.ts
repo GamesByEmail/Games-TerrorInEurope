@@ -11,10 +11,10 @@ export class Trap extends Token {
       this.result === ETokenResult.AGED ? "Aged" :
         "");
   }
-  isCovertOps(){
+  isCovertOps() {
     return true;
   }
- aged() {
+  aged() {
     this.visibility = ETokenVisibility.VISIBLE;
     if (!this.result)
       this.worked(1);

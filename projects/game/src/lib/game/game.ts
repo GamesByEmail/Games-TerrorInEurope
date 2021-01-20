@@ -3,12 +3,12 @@ import { filter, take, takeUntil } from 'rxjs/operators';
 import { BaseGame, IBaseGameSave, IBaseGameState } from '@gamesbyemail/base';
 import { Board, IBoardSave } from './board';
 import { Team, ITeamSave } from './team';
-import { Territory, ITerritorySave } from './territory';
+import { Territory, ITerritorySave, regionList, Region, isInformantSearchable } from './territory';
 import { isOperative, isTerrorist, TeamId } from './team-id';
 import { Move, IModMove } from './move';
 import { CovertOpToken, Token } from './pieces/token/token';
 import { ServerService } from 'projects/server/src/public-api';
-import { ETokenType, IInfoState, IOpsState, ITeamState, ITerrState } from './team-state';
+import { ESearchType, ETokenType, IInformantNetworkState, IOperativeState, ITeamState, ITerroristState } from './team-state';
 import { createToken } from './pieces/token/create-token';
 import { annotateGameState } from './state-annotation';
 import { IMapPoint } from '../boards/default/board/city-map-data';
@@ -18,7 +18,7 @@ export interface IGameOptions {
 }
 
 export interface IGameState extends IBaseGameState<Game, IGameOptions, IGameState, IGameSave, Board, undefined, IBoardSave, Territory, undefined, ITerritorySave, Team, TeamId, ITeamState, ITeamSave, Move, IModMove> {
-  teams: [IOpsState, IOpsState, IOpsState, IInfoState, ITerrState];
+  teams: [IOperativeState, IOperativeState, IOperativeState, IInformantNetworkState, ITerroristState];
   moves: Move[];
 }
 
@@ -26,7 +26,7 @@ export interface IGameSave extends IBaseGameSave<Game, IGameOptions, IGameState,
   header: string;
 }
 export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Board, undefined, IBoardSave, Territory, undefined, ITerritorySave, Team, TeamId, ITeamState, ITeamSave, Move, IModMove> {
-  moving=false;
+  moving = false;
   constructor() {
     super();
     this._board = new Board(this);
@@ -34,10 +34,10 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
     Object.freeze(this._teams);
   }
   header: string = "";
-  public $$$rollDie(max: number = 6, min: number = 1):number {
+  public $$$rollDie(max: number = 6, min: number = 1): number {
     return <number><unknown>"\x01D6";
   }
-
+  searchableRegions: (Region | "ALL")[] = [];
   private stateAbandon = new Subject();
   abandonState() {
     this.stateAbandon.next(true);
@@ -49,7 +49,8 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
       .pipe(filter(open => !open), take(1))
       .pipe(takeUntil(this.stateAbandon))
       .subscribe(o => {
-        this.moving=false;
+        this.moving = false;
+        this.searchableRegions.length = 0;
         this._moveNumber = -1;
         this.board.clear();
         this.board.setState();
@@ -84,8 +85,9 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
                   }
                 }
               else {
+                const token = turnTeam.city.findTokens().filter(token => token.age === 0);
                 const operatives = turnTeam.city.findOperatives();
-                if (turnTeam.hasRolls() || operatives.filter(o => o.isAlive()).length > 0)
+                if (token.length > 0 && (turnTeam.hasRolls() || operatives.filter(o => o.isAlive()).length > 0))
                   this.resolveCombat(turnTeam, operatives);
                 else {
                   this.save();
@@ -157,7 +159,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   }
   beginMeepleMove(team: Team) {
     this.clearRolls();
-    this.moving=true;
+    this.moving = true;
     const availableMoves = team.city ? team.availableMoves() : this.board.territories;
     availableMoves.forEach(c => c.canSelect = true);
   }
@@ -170,16 +172,71 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
     }
     this.clearRolls();
     this.modalOpen.next(true);
-    this.board.openInformantNetwork(informant, () => this.getGeographicCenterOfOperatives())
+    const allSearchable = this.getOperatives()
+      .filter(op => op.isAlive() && op.city)
+      .map(op => op.city.region)
+      .filter(isInformantSearchable);
+    const canRegionSearch = !this.getTerrorist().city;
+    const canAllSearch = canRegionSearch && allSearchable.length > 0;
+    allSearchable
+    this.board.openInformantNetwork(informant, canRegionSearch, canAllSearch, () => this.getGeographicCenterOfOperatives())
       .pipe(takeUntil(this.stateAbandon))
-      .subscribe(question => {
+      .subscribe(searchType => {
         this.modalOpen.next(false);
-        this.saveIt(informant);
+        informant.search = { t: searchType!, d: [] };
+        switch (searchType!) {
+          case ESearchType.CITY:
+            this.board.territories.forEach(city => {
+              if (isInformantSearchable(city.region) && !city.findUnexpiredToken() && !city.hasOperative(true))
+                city.canSelect = true;
+            });
+            break;
+          case ESearchType.REGION:
+            this.searchableRegions = regionList.filter(isInformantSearchable);
+            break;
+          case ESearchType.ALL:
+            this.searchableRegions = allSearchable;
+            this.searchableRegions.unshift("ALL");
+            break;
+        }
       });
+  }
+  regionChosen(region: Region) {
+    if (this.searchableRegions.includes(region))
+      this.completeInformantSearch(region);
+  }
+  completeInformantSearch(data: number | Region) {
+    const region = data as Region;
+    const city = data as number;
+    const informant = this.findTurnTeam()!;
+    switch (informant.search!.t) {
+      case ESearchType.CITY:
+        informant.search!.d.push(city);
+        break;
+      case ESearchType.REGION:
+        informant.search!.d = this.board.territories
+          .filter(city => city.region === region)
+          .map(city => city.index);
+        break;
+      case ESearchType.ALL:
+        informant.search!.d = this.board.territories
+          .filter(city => this.searchableRegions.includes(city.region))
+          .map(city => city.index);
+        break;
+    }
+    this.searchableRegions = [];
+    this.incrementTurn();
+    this.saveIt(informant);
   }
   ageAllTokens(terroristReMoving?: boolean) {
     this.getAllTokens().forEach(token => token.increment(terroristReMoving));
     this.findTeam(TeamId.InformantNetwork).agedMoveNumber = this.moveNumber;
+  }
+  allTokensAccountedFor() {
+    const ages = [false, false, false];
+    this.getAllTokens().forEach(token => ages[token.age] = true);
+    console.log("allTokensAccountedFor", ages);
+    return !ages.includes(false);
   }
   getGeographicCenterOfOperatives() {
     const operatives = this.getOperatives().filter(op => op.city);
@@ -215,6 +272,8 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   moveHere(city: Territory, tokenType?: ETokenType) {
     //this.moving=false;
     const turnTeam = this.findTurnTeam()!;
+    if (turnTeam.isInformantNetwork())
+      return this.completeInformantSearch(city.index);
     if (turnTeam.isTerrorist()) {
       const token = createToken(this.board.game, tokenType || ETokenType.MARKER);
       token.changeTerritory(city);
@@ -247,7 +306,7 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   public incrementTurn() {
     const turnTeam = this.findTurnTeam()!;
     let nextTeam = turnTeam.getNext()!;
-    if (nextTeam.isInformantNetwork() && !this.doneSettingUp())
+    if (nextTeam.isInformantNetwork() && (!this.doneSettingUp() || this.allTokensAccountedFor()))
       nextTeam = nextTeam.getNext()!;
     turnTeam.myTurn = false;
     nextTeam.myTurn = true;

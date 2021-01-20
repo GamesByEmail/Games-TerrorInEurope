@@ -12,7 +12,7 @@ export class Recruit extends Token {
         this.result === ETokenResult.LOST ? "Fail" :
           "");
   }
-  isCovertOps(){
+  isCovertOps() {
     return true;
   }
   aged() {

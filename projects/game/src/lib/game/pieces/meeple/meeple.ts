@@ -8,7 +8,7 @@ export type Operative = SecretAgents | BombSquad | SpecialForces;
 
 export abstract class Meeple extends Piece {
   setState(team: Team) {
-    this._team=team;
+    this._team = team;
   }
   getState() {
     return undefined;
@@ -19,10 +19,10 @@ export abstract class Meeple extends Piece {
   sortOrder(): number {
     return (this.isDead() ? 0 : 10) + (this.team.isUs() ? 100 : 0) + (this.team.myTurn ? 1000 : 0);
   }
-  isAlive(){
+  isAlive() {
     return this.team.isAlive();
   }
-  isDead(){
+  isDead() {
     return this.team.isDead();
   }
 }

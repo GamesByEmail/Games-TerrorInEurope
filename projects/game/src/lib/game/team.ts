@@ -9,7 +9,7 @@ import { Meeple } from './pieces/meeple/meeple';
 import { Trap } from './pieces/token/trap';
 import { Bomb } from './pieces/token/bomb';
 import { Recruit } from './pieces/token/recruit';
-import { ETokenVisibility, IInfoState, IOpsState, ITeamState, ITerrState, ITokenState } from './team-state';
+import { ESearchType, ETokenVisibility, IInformantNetworkSearchState, IInformantNetworkState, IOperativeState, ITeamState, ITerroristState, ITokenState } from './team-state';
 import { createToken } from './pieces/token/create-token';
 import { createMeeple } from './pieces/meeple/create-meeple';
 import { CovertOpToken } from './pieces/token/token';
@@ -31,6 +31,7 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
   agedMoveNumber: number
   rolls: number[]
   meeple?: Meeple
+  search?: IInformantNetworkSearchState;
   constructor(game: Game, id: TeamId) {
     super(game, id);
     this.city = <any>undefined;
@@ -53,17 +54,17 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
     this.agedMoveNumber = 0;
     this.meeple = undefined;
     if (this.isSecretAgents() || this.isBombSquad() || this.isSpecialForces()) {
-      state = <IOpsState>state;
+      state = <IOperativeState>state;
       if (state.c >= 0)
         this.city = this.game.board.territories[state.c];
       this.setStrength(state.s)
       if (state.r)
         this.rolls = state.r;
     } else if (this.isInformantNetwork()) {
-      state = <IInfoState>state;
+      state = <IInformantNetworkState>state;
       this.agedMoveNumber = state.a;
     } else {
-      state = <ITerrState>state;
+      state = <ITerroristState>state;
       if (typeof (state.c) === "number" && state.c >= 0)
         this.city = this.game.board.territories[state.c];
       this.viktoryPoints = state.v;
@@ -87,16 +88,16 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
       state = {
         c: this.city ? this.city.index : -1,
         s: this.strength
-      } as IOpsState;
+      } as IOperativeState;
     else if (this.isInformantNetwork())
       state = {
         a: this.agedMoveNumber
-      } as IInfoState;
+      } as IInformantNetworkState;
     else {
       state = {
         v: this.viktoryPoints,
         s: this.strength
-      } as ITerrState;
+      } as ITerroristState;
       const pubTokens = this.getTokenStates(false);
       if (pubTokens && pubTokens.length > 0)
         state.t = pubTokens;

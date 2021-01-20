@@ -1,15 +1,15 @@
 
 import { annotate } from '@packageforge/annotated-json';
 import { Game, IGameState } from './game';
-import { ETokenResult, ETokenType, ETokenVisibility, ITerrState, ITokenState } from './team-state';
+import { ETokenResult, ETokenType, ETokenVisibility, ITerroristState, ITokenState } from './team-state';
 
 export function annotateGameState(game: Game, gameState: IGameState) {
   return annotate("",
     "moveNumber", "",
-    "teams", gameState.teams.map((teamState, index) => annotateTeamState(game, teamState as ITerrState, index))
+    "teams", gameState.teams.map((teamState, index) => annotateTeamState(game, teamState as ITerroristState, index))
   );
 }
-function annotateTeamState(game: Game, teamState: ITerrState, index: number) {
+function annotateTeamState(game: Game, teamState: ITerroristState, index: number) {
   return annotate(teamNameAnnotation(teamState, index),
     "$T", teamState.$T ? "OUR TURN" : "NOT OUR TURN",
     "c", annotateCityName(game, teamState.c),
@@ -24,7 +24,7 @@ function annotateTeamState(game: Game, teamState: ITerrState, index: number) {
   );
 }
 const teamNames = ["Secret Agents", "Bomb Squad", "Special Forces", "Informant Network", "Terrorist"];
-function teamNameAnnotation(teamState: ITerrState, index: number) {
+function teamNameAnnotation(teamState: ITerroristState, index: number) {
   let anno = teamNames[index];
   if (index === 4)
     if (typeof (teamState.$_?.c) === "number")

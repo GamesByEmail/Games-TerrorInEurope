@@ -16,7 +16,11 @@ export interface ITerritorySave extends IBaseTerritorySave<Game, IGameOptions, I
 export type Region = "British" | "Nordic" | "Iberian" | "Franco" | "German" | "Slavic" | "Baltic" | "African" | "Italian" | "Balkan" | "Ukrainian" | "Turk";
 export type CitySize = "SMALL" | "MEDIUM" | "LARGE";
 export type Transport = "road" | "rail" | "sea" | "air";
+export const regionList:Region[] = ["British" , "Nordic" , "Iberian" , "Franco" , "German" , "Slavic" , "Baltic" , "African" , "Italian" , "Balkan" , "Ukrainian" , "Turk"];
 
+export function isInformantSearchable(region:Region){
+  return region!=="African" && region!=="Turk";
+}
 
 export interface IAdjacent {
   road?: string[]

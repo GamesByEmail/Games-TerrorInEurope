@@ -21,7 +21,7 @@ export interface IBoardSave extends IBaseBoardSave<Game, IGameOptions, IGameStat
 export interface IBoardController {
   openCovertOps(operative: Team | undefined, token: CovertOpToken, pointFnc: () => IMapPoint): Observable<ICovertOpsDialogResult | undefined>
   openCombat(attacker: Team, defenders: Team[], pointFnc: () => IMapPoint): Observable<ICombatDialogResult | undefined>
-  openInformantNetwork(informant: Team, pointFnc: () => IMapPoint): Observable<IInformantNetworkDialogResult | undefined>
+  openInformantNetwork(informant: Team, regionSearchable: boolean, allSearchable: boolean, pointFnc: () => IMapPoint): Observable<IInformantNetworkDialogResult | undefined>
 }
 
 export class Board extends BaseMapBoard<
@@ -89,8 +89,8 @@ export class Board extends BaseMapBoard<
       .pipe(mergeMap(c => c.openCombat(attacker, defenders, pointFnc)));
   }
 
-  openInformantNetwork(informant: Team, pointFnc: () => IMapPoint) {
+  openInformantNetwork(informant: Team, regionSearchable: boolean, allSearchable: boolean, pointFnc: () => IMapPoint) {
     return this.controller
-      .pipe(mergeMap(c => c.openInformantNetwork(informant, pointFnc)));
+      .pipe(mergeMap(c => c.openInformantNetwork(informant, regionSearchable, allSearchable, pointFnc)));
   }
 }

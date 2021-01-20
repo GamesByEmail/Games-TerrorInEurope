@@ -1,5 +1,5 @@
 import { BaseServer } from "./base.server";
-import { ETokenResult, ETokenType, ETokenVisibility, IOpsState, ITerrState, ITokenState } from "projects/game/src/lib/game/team-state";
+import { ETokenResult, ETokenType, ETokenVisibility, IOperativeState, ITerroristState, ITokenState } from "projects/game/src/lib/game/team-state";
 import { Game, IGameOptions, IGameState } from "projects/game/src/lib/game/game";
 import { IGameData } from "@gamesbyemail/base";
 import { TeamId } from "projects/game/src/lib/game/team-id";
@@ -21,24 +21,26 @@ export class ServerService extends BaseServer<Game, IGameState> {
   protected move(state: IGameState, oldState: IGameState) {
     if (!oldState)
       return;
-    if (state.teams[3].$T && oldState.teams[3].$T) {
+    if (state.teams[4].$T && !oldState.teams[4].$T) {
       const infoState = state.teams[3];
-      infoState.a = state.moveNumber;
-      const terrState = state.teams[4];
-      this.ageTokens(terrState);
-      if (terrState.t && terrState.t.length === 0)
-        delete terrState.t;
-      if (!terrState.t || this.allTokensBenign(terrState.t)) {
-        delete state.teams[3].$T;
-        state.teams[4].$T = true;
+      if (infoState.a !== state.moveNumber) {
+        infoState.a = state.moveNumber;
+        const terrState = state.teams[4];
+        this.ageTokens(terrState);
+        if (terrState.t && terrState.t.length === 0)
+          delete terrState.t;
+        if (terrState.t && !this.allTokensBenign(terrState.t)) {
+          delete state.teams[4].$T;
+          state.teams[3].$T = true;
+        }
       }
     } else {
       const tState = state.teams[4];
       delete tState.c;
       if (tState.$_) {
         for (let i = 0; i < 3; i++) {
-          const newOpsState = state.teams[i] as IOpsState;
-          const oldOpsState = oldState.teams[i] as IOpsState;
+          const newOpsState = state.teams[i] as IOperativeState;
+          const oldOpsState = oldState.teams[i] as IOperativeState;
           const justMovedHere = this.justMovedHere(newOpsState, oldOpsState)
           if (newOpsState.c === tState.$_.c && newOpsState.s > 0) {
             tState.c = tState.$_.c;
@@ -58,7 +60,7 @@ export class ServerService extends BaseServer<Game, IGameState> {
       }
     }
   }
-  private ageTokens(tState: ITerrState) {
+  private ageTokens(tState: ITerroristState) {
     const vTokens = this.ageTokensList(tState.$_!.t, 2);
     if (!tState.t)
       tState.t = [];
@@ -73,13 +75,13 @@ export class ServerService extends BaseServer<Game, IGameState> {
         agedOut.push(tokens.splice(i--, 1)[0]);
     return agedOut;
   }
-  private justMovedHere(nState: IOpsState, oState: IOpsState) {
+  private justMovedHere(nState: IOperativeState, oState: IOperativeState) {
     return oState.$T && nState.c !== oState.c;
   }
-  private justRevivedHere(nState: IOpsState, oState: IOpsState) {
+  private justRevivedHere(nState: IOperativeState, oState: IOperativeState) {
     return oState.$T && nState.c === oState.c && oState.s === 0 && nState.s > 0;
   }
-  private revealTokens(tState: ITerrState, c: number, fullReveal: boolean) {
+  private revealTokens(tState: ITerroristState, c: number, fullReveal: boolean) {
     let count = 0;
     if (tState.$_) {
       const priTokens = tState.$_.t;

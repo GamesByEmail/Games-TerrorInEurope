@@ -19,6 +19,9 @@
 :host {
   user-select: none;
 }
+.unclickable * {
+  pointer-events: none;
+}
 .mover {
   pointer-events: none;
 }
@@ -136,10 +139,10 @@
   stroke-width: 6;
   fill: transparent;
   transition: transform 0.5s;
-  spointer-events: none;
 }
 
-.lands.hovrey:hover .land {
+.seachableLands.allSearchable:hover .lands.searchable .land,
+.seachableLands:not(.allSearchable) .lands.searchable:hover .land {
   transform: scale(1.1);
 }
 

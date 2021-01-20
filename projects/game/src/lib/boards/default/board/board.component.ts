@@ -1,14 +1,10 @@
 import { Component, Input, ElementRef, ViewChild, AfterViewInit, ViewContainerRef, ChangeDetectorRef, NgZone } from '@angular/core';
-import { trigger, state, style, animate, transition, sequence } from '@angular/animations';
-
 import { BoardService } from '@gamesbyemail/base';
-
 import { Territory } from '../../../game/territory';
 import { Game } from '../../../game/game';
 import { fromEvent, Subscription, Observable, Subject, merge } from 'rxjs';
-import { map, finalize, tap } from 'rxjs/operators';
+import { map, finalize } from 'rxjs/operators';
 import { Rectangle2D } from '@packageforge/geometry2d';
-import { Piece } from '../../../game/piece';
 import { cityMapData, IMapPoint } from './city-map-data';
 import { CovertOpsDialogService } from '../dialogs/covert-ops/covert-ops-dialog.service';
 import { CombatDialogService } from '../dialogs/combat/combat-dialog.service';
@@ -20,26 +16,7 @@ import { InformantNetworkDialogService } from '../dialogs/informant-network/info
 @Component({
   selector: 'gamesbyemail-games-terrorInEurope-default-board',
   templateUrl: './board.component.html',
-  styleUrls: ['./board.component.css'],
-  animations: [
-    trigger('showCheck', [
-      state('false', style({ opacity: 1 })),
-      state('true', style({ opacity: 1 })),
-      transition('false => true', sequence([
-        animate("0.05s", style({ opacity: 0 })),
-        animate("0.15s", style({ opacity: 0 })),
-        animate("0.05s", style({ opacity: 1 })),
-        animate("0.15s", style({ opacity: 1 })),
-        animate("0.05s", style({ opacity: 0 })),
-        animate("0.15s", style({ opacity: 0 })),
-        animate("0.05s", style({ opacity: 1 })),
-        animate("0.15s", style({ opacity: 1 })),
-        animate("0.05s", style({ opacity: 0 })),
-        animate("0.15s", style({ opacity: 0 })),
-        animate("0.05s", style({ opacity: 1 }))
-      ]))
-    ])
-  ]
+  styleUrls: ['./board.component.css']
 })
 export class BoardComponent implements AfterViewInit {
   game!: Game;
@@ -118,29 +95,6 @@ export class BoardComponent implements AfterViewInit {
     console.log("digest");
     return "";
   }
-  get perspectiveTeam() {
-    return this.game.findTeam(this.game.perspective);
-  }
-  get opposingTeam() {
-    return this.perspectiveTeam.getNext(true)!;
-  }
-  boardTransform() {
-    let transform = "";
-    transform += " translate(" + (-this.viewBox.x) + " " + (-this.viewBox.y) + ")";
-    return transform;
-  }
-  territoryTransform(territory: Territory): string {
-    let transform = "";
-    transform += " translate(" + 0 + " " + 0 + ")";
-    return transform;
-  };
-  pieceTransform(piece: Piece) {
-    let transform = "";
-    //    const pieceOffset=cityData[piece.type];
-    //   if (pieceOffset)
-    //     transform += " translate(" + (pieceOffset.origin.x+pieceOffset.offset.x*piece.offset) + " " + (pieceOffset.origin.y+pieceOffset.offset.y*piece.offset) + ")";
-    return transform;
-  }
   openCovertOps(operative: Team | undefined, token: CovertOpToken, pointFnc: () => IMapPoint) {
     const point = pointFnc();
     this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
@@ -153,14 +107,21 @@ export class BoardComponent implements AfterViewInit {
     let ref = this.combatDialogService.open(this.dialogArea, { attacker: attacker, defenders: defenders }, this.dialogOverlay);
     return ref.afterClosed().pipe(finalize(() => ref.close()));
   }
-  openInformantNetwork(informant: Team, pointFnc: () => IMapPoint) {
+  openInformantNetwork(informant: Team, regionSearchable: boolean, allSearchable: boolean, pointFnc: () => IMapPoint) {
     const point = pointFnc();
     this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
-    let ref = this.informantNetworkDialogService.open(this.dialogArea, { informant: informant }, this.dialogOverlay);
+    let ref = this.informantNetworkDialogService.open(this.dialogArea, { informant: informant, regionSearchable: regionSearchable, allSearchable: allSearchable }, this.dialogOverlay);
     return ref.afterClosed().pipe(finalize(() => ref.close()));
   }
   tokenClass(token: Token) {
     return { aged: token.result === ETokenResult.AGED, won: token.result === ETokenResult.WON, lost: token.result === ETokenResult.LOST };
+  }
+  moveSearchableLands(allLands: any, searchableLands: any) {
+    if ((allLands instanceof SVGGElement) && (searchableLands instanceof SVGGElement)) {
+      allLands.querySelectorAll(".lands.searchable").forEach(s => searchableLands.appendChild(s));
+      searchableLands.querySelectorAll(".lands:not(.searchable)").forEach(u => allLands.appendChild(u));
+    }
+    return this.game.searchableRegions.includes("ALL") ? "allSearchable" : "";
   }
   ETokenType = ETokenType
 }

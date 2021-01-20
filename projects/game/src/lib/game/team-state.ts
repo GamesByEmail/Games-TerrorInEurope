@@ -1,17 +1,39 @@
-export type ITeamState = IOpsState | IInfoState | ITerrState
+export type ITeamState = IOperativeState | IInformantNetworkState | ITerroristState
 
-export interface IOpsState {
+export interface IOperativeState {
   $T?: boolean // turn=false
   $P?: boolean // playing=true
   c: number //city index
   s: number // strength
-  r?: number[] //rolls
+  r?
+  : number[] //rolls
 }
-export interface IInfoState {
+
+export type LSearchType = "c" | "r" | "a";
+export enum ESearchType {
+  CITY = "c",
+  REGION = "r",
+  ALL = "a"
+}
+
+export type IInformantNetworkSearchState = IInformantNetworkCitySearchState | IInformantNetworkRegionSearchState;
+
+export interface IInformantNetworkCitySearchState {
+  t: ESearchType.CITY // search type
+  d: number[] // search data
+  a?: number // search answer
+}
+export interface IInformantNetworkRegionSearchState {
+  t: ESearchType.REGION | ESearchType.ALL // search type
+  d: number[] // search data
+  a?: boolean // search answer
+}
+export interface IInformantNetworkState {
   $T?: boolean // turn=false
   $P?: boolean // playing=true
   a: number // aged move number
   r?: number[] //rolls
+  s?: IInformantNetworkSearchState
 }
 
 export type LTokenType = "b" | "r" | "t" | "m" | "u";
@@ -41,7 +63,7 @@ export interface ITokenState {
   r: ETokenResult // resolution
 }
 
-export interface ITerrState {
+export interface ITerroristState {
   $T?: boolean // turn=false
   $P?: boolean // playing=true
   v: number // viktory points

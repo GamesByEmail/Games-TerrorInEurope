@@ -70,7 +70,7 @@ export class CovertOpsDialogComponent {
   }
   viktoryPoints(count?: number) {
     if (typeof (count) === "number")
-      return count + " VIKTORY " + this.pluralForm("point",count);
+      return count + " VIKTORY " + this.pluralForm("point", count);
     return "VIKTORY point";
   }
   pluralForm(word: string, test?: number) {

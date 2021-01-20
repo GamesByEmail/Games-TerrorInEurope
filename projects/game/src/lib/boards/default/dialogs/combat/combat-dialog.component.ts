@@ -82,7 +82,7 @@ export class CombatDialogComponent {
     this.done = !this.attacker.myTurn;
     this.chooseDefender = !this.defender || (this.defender.isDead() && this.getLiveDefenders().length > 0);
     this.next = !this.chooseDefender && !this.readyToFight && !this.done && this.rolls !== undefined;
-    this.canCancel=this.tAttack && !this.rolls;
+    this.canCancel = this.tAttack && !this.rolls;
   }
   getLiveDefenders(includingCurrent: boolean = true) {
     if (!this.defender)
@@ -141,17 +141,17 @@ export class CombatDialogComponent {
     const combatant = this.combatant(defenderIndex);
     if (!combatant || combatant === this.defender)
       return "";
-    let classes="otherCombatant";
+    let classes = "otherCombatant";
     if (this.chooseDefender && combatant.isAlive())
-      classes+=" selectableCombatant";
+      classes += " selectableCombatant";
     return classes;
   }
-  combatantTransform(x:number,defenderIndex: number) {
+  combatantTransform(x: number, defenderIndex: number) {
     const combatant = this.combatant(defenderIndex);
     if (!combatant)
       return "";
     const offset = combatant === this.defender ? -15 : 0;
-    return "translate(" + (x+(2 - defenderIndex!) * 20 + offset) + " 0)";
+    return "translate(" + (x + (2 - defenderIndex!) * 20 + offset) + " 0)";
   }
   dieHref(index: 'a' | 'd') {
     if (!this.rolls)
