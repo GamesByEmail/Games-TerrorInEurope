@@ -265,22 +265,26 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
     if (rollStrength > 0)
       token.worked(rollStrength, this);
   }
-  availableMoves() {
+  availableMoves(noAir: boolean = false) {
     if (!this.city)
       return this.game.board.territories;
+    const airMoves = noAir ? 0 : 1;
     if (this.isTerrorist())
-      return this.city.allInRange(1, 2, 1, 1).filter(c => !c.findUnexpiredToken());
+      return this.city.allInRange(1, 2, 1, airMoves).filter(c => !c.findUnexpiredToken());
     if (this.isDead())
       return [this.city];
     let range;
     if (this.isSecretAgents())
-      range = this.city.allInRange(2, 2, 2, 1);
+      range = this.city.allInRange(2, 2, 2, airMoves);
     else if (this.isBombSquad())
-      range = this.city.allInRange(2, 2, 2, 1);
+      range = this.city.allInRange(2, 2, 2, airMoves);
     else
-      range = this.city.allInRange(1, 2, 1, 1);
+      range = this.city.allInRange(1, 2, 1, airMoves);
     range.push(this.city);
     return range;
+  }
+  mustFly(city: Territory) {
+    return !this.availableMoves(true).includes(city);
   }
   get meepleTitle() {
     if (this.isSecretAgents()) return "Secret Agents";

@@ -55,7 +55,7 @@ export class ServerService extends BaseServer<Game, IGameState> {
           if (justMovedHere && this.revealTokens(tState, newOpsState.c, true) > 0)
             this.setTurn(state, newOpsState);
         }
-        if (typeof (tState.c) !== "number" && tState.t && tState.t.find(t => t.t === "m" && t.a === 0))
+        if (typeof (tState.c) !== "number" && tState.t && tState.t.find(t => t.a === 0))
           tState.c = tState.$_.c;
       }
     }

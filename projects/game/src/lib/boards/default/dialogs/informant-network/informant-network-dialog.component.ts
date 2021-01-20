@@ -17,8 +17,6 @@ export class InformantNetworkDialogComponent {
     this.informant = data.informant;
     this.regionSearchable = data.regionSearchable;
     this.allSearchable = data.allSearchable;
-    console.log("regionSearchable", this.regionSearchable);
-    console.log("allSearchable", this.allSearchable);
   }
   close(type: LSearchType) {
     this.dialogRef.close(type as ESearchType);

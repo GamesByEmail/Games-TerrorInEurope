@@ -28,8 +28,4 @@ export class PiecesComponent implements ITemplateLibrary, AfterViewInit {
   getSize(template: TemplateRef<any> | undefined): ITemplateSize | undefined {
     return this.templateLibraryService.getTemplateSize(template);
   }
-  url(url: string) {
-    console.log("url(" + this.location.path() + url + ")");
-    return "url(" + this.location.path() + url + ")";
-  }
 }

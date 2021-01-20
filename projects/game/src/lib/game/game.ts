@@ -8,7 +8,7 @@ import { isOperative, isTerrorist, TeamId } from './team-id';
 import { Move, IModMove } from './move';
 import { CovertOpToken, Token } from './pieces/token/token';
 import { ServerService } from 'projects/server/src/public-api';
-import { ESearchType, ETokenType, IInformantNetworkState, IOperativeState, ITeamState, ITerroristState } from './team-state';
+import { ESearchType, ETokenType, ETokenVisibility, IInformantNetworkState, IOperativeState, ITeamState, ITerroristState } from './team-state';
 import { createToken } from './pieces/token/create-token';
 import { annotateGameState } from './state-annotation';
 import { IMapPoint } from '../boards/default/board/city-map-data';
@@ -231,12 +231,11 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   }
   ageAllTokens(terroristReMoving?: boolean) {
     this.getAllTokens().forEach(token => token.increment(terroristReMoving));
-    this.findTeam(TeamId.InformantNetwork).agedMoveNumber = this.moveNumber;
+    this.findTeam(TeamId.InformantNetwork).agedMoveNumber = this.moveNumber + 1;
   }
   allTokensAccountedFor() {
     const ages = [false, false, false];
     this.getAllTokens().forEach(token => ages[token.age] = true);
-    console.log("allTokensAccountedFor", ages);
     return !ages.includes(false);
   }
   getGeographicCenterOfOperatives() {
@@ -276,8 +275,17 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
     if (turnTeam.isInformantNetwork())
       return this.completeInformantSearch(city.index);
     if (turnTeam.isTerrorist()) {
+      const mustFly = turnTeam.mustFly(city)
       const token = createToken(this.board.game, tokenType || ETokenType.MARKER);
       token.changeTerritory(city);
+      if (mustFly) {
+        token.visibility = ETokenVisibility.EXISTANCE;
+        if (tokenType) {
+          const c = createToken(this.board.game, ETokenType.UNKNOWN);
+          c.changeTerritory(city);
+          c.visibility = ETokenVisibility.VISIBLE;
+        }
+      }
     }
     const mustAgeIfCombatBreak = turnTeam.city && turnTeam.city.hasOperative(true);
     if (city === turnTeam.city)

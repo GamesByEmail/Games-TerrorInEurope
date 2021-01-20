@@ -12,25 +12,24 @@ export class TestGameComponent implements OnDestroy {
   private unsub = new Subject();
   @Input("service") public service!: TestGameService
   @Input("notes") public notes!: string
-  showNotes=false;
+  showNotes = false;
   ngOnDestroy(): void {
     this.unsub.next();
     this.unsub.complete();
   }
   tempChangeTitle(button: HTMLInputElement, tempTitle: string, origTitle: string) {
-    console.log(button);
     button.value = tempTitle;
     timer(1000).pipe(takeUntil(this.unsub)).subscribe(() => button.value = origTitle);
   }
   doExport(button: HTMLInputElement) {
     window.navigator.clipboard.writeText(this.service.export());
-    this.tempChangeTitle(button, "Exported to Clipboard","Export");
+    this.tempChangeTitle(button, "Exported to Clipboard", "Export");
   }
   doImport(button: HTMLInputElement) {
     const result = window.prompt("Paste game data here:", "");
     if (result) {
       this.service.import(result);
-      this.tempChangeTitle(button, "Imported","Import");
+      this.tempChangeTitle(button, "Imported", "Import");
     }
   }
 }
