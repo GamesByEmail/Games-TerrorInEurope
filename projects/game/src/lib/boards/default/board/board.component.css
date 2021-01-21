@@ -48,7 +48,19 @@
   stroke-width: 6;
   stroke: rgb(0, 88, 237);
 }
-
+.viktoryPointsText {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 100px;
+  font-weight: bold;
+  stroke:none;
+  fill:rgb(0,0,255);
+  dominant-baseline: middle;
+  text-anchor: middle;
+  stroke: rgb(0, 0, 0);
+  stroke-width: 5;
+  paint-order: stroke fill;
+  pointer-events: none;
+}
 .compassText {
   font-family: Felipa;
   font-size: 18px;

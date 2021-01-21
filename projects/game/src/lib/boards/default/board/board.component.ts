@@ -4,7 +4,7 @@ import { Territory } from '../../../game/territory';
 import { Game } from '../../../game/game';
 import { fromEvent, Subscription, Observable, Subject, merge } from 'rxjs';
 import { map, finalize } from 'rxjs/operators';
-import { Rectangle2D } from '@packageforge/geometry2d';
+import { Point2D, Rectangle2D } from '@packageforge/geometry2d';
 import { CovertOpsDialogService } from '../dialogs/covert-ops/covert-ops-dialog.service';
 import { CombatDialogService } from '../dialogs/combat/combat-dialog.service';
 import { Team } from '../../../game/team';
@@ -57,7 +57,7 @@ export class BoardComponent implements AfterViewInit {
   mousemove: Observable<MouseEvent> = <any>fromEvent(document, 'mousemove');
   mouseup: Observable<any> = fromEvent(document, 'mouseup').pipe(map(() => undefined));
   territoryUp: Subject<Territory> = new Subject();
-  viewBox: Rectangle2D = new Rectangle2D(0, 0, 100, 100);
+  viewBox: Rectangle2D = new Rectangle2D(0, 0, 1710, 1515);
   regionMapData = regionMapData
 
   constructor(
@@ -97,20 +97,23 @@ export class BoardComponent implements AfterViewInit {
     console.log("digest");
     return "";
   }
+  conformPoint(point: IMapPoint, width: number, height: number) {
+    return (new Point2D(point)).constrainTo(this.viewBox.clone().grow(-width, -height, true));
+  }
   openCovertOps(operative: Team | undefined, token: CovertOpToken, pointFnc: () => IMapPoint) {
-    const point = pointFnc();
+    const point = this.conformPoint(pointFnc(), 420, 435);
     this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
     let ref = this.covertOpsDialogService.open(this.dialogArea, { operative: operative, token: token }, this.dialogOverlay);
     return ref.afterClosed().pipe(finalize(() => ref.close()));
   }
   openCombat(attacker: Team, defenders: Team[], pointFnc: () => IMapPoint) {
-    const point = pointFnc();
+    const point = this.conformPoint(pointFnc(), 420, 435);
     this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
     let ref = this.combatDialogService.open(this.dialogArea, { attacker: attacker, defenders: defenders }, this.dialogOverlay);
     return ref.afterClosed().pipe(finalize(() => ref.close()));
   }
   openInformantNetwork(informant: Team, regionSearchable: boolean, allSearchable: boolean, pointFnc: () => IMapPoint) {
-    const point = pointFnc();
+    const point = this.conformPoint(pointFnc(), 540, 250);
     this.dialogArea.element.nativeElement.parentNode.setAttribute("transform", point ? "translate(" + point.x + " " + point.y + ")" : null);
     let ref = this.informantNetworkDialogService.open(this.dialogArea, { informant: informant, regionSearchable: regionSearchable, allSearchable: allSearchable }, this.dialogOverlay);
     return ref.afterClosed().pipe(finalize(() => ref.close()));

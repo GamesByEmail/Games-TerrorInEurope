@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 1710 1615" style="width:1710px;height:1615px" (click)="game.clearModal($event)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1710 1615" style="width:1710px;height:1615px" (click)="game.clearModal($event)">
   <!--
     {{digest()}}
     -->
@@ -253,6 +253,9 @@
     <text y="-14">Gulf of</text>
     <text y="14">Bothnia</text>
   </g>
+
+  <text class="viktoryPointsText" x="400" y="100">{{game.teams[4].viktoryPoints}}</text>
+
   <g #allLands>
     <g *ngFor="let region of regionMapData" [class]="region.name+' lands'" onmouseover="if (this.parentNode.lastChild!==this) this.parentNode.appendChild(this)" (click)="game.regionChosen(region.name)" [ngClass]="{searchable:game.searchableRegions.includes(region.name),searched:this.game.searchedRegions.includes(region.name),searchYes:game.searchResult===true,searchNo:game.searchResult===false}">
       <polygon *ngFor="let polygon of region.polygons" class="landback" [attr.transform-origin]="polygon.origin" [attr.points]="polygon.points" />
