@@ -37,7 +37,10 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   public $$$rollDie(max: number = 6, min: number = 1): number {
     return <number><unknown>"\x01D6";
   }
+  searchedRegions: Region[] = [];
+  searchedCity: number = -1;
   searchableRegions: (Region | "ALL")[] = [];
+  searchResult?: boolean
   private stateAbandon = new Subject();
   abandonState() {
     this.stateAbandon.next(true);
@@ -173,13 +176,14 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
     }
     this.clearRolls();
     this.modalOpen.next(true);
+    informant.search = undefined;
     const allSearchable = this.getOperatives()
       .filter(op => op.isAlive() && op.city)
       .map(op => op.city.region)
       .filter(isInformantSearchable);
     const canRegionSearch = !this.getTerrorist().city;
     const canAllSearch = canRegionSearch && allSearchable.length > 0;
-    allSearchable
+
     this.board.openInformantNetwork(informant, canRegionSearch, canAllSearch, () => this.getGeographicCenterOfOperatives())
       .pipe(takeUntil(this.stateAbandon))
       .subscribe(searchType => {
@@ -315,8 +319,10 @@ export class Game extends BaseGame<Game, IGameOptions, IGameState, IGameSave, Bo
   public incrementTurn() {
     const turnTeam = this.findTurnTeam()!;
     let nextTeam = turnTeam.getNext()!;
-    if (nextTeam.isInformantNetwork() && (!this.doneSettingUp() || this.allTokensAccountedFor()))
+    if (nextTeam.isInformantNetwork() && (!this.doneSettingUp() || this.allTokensAccountedFor())) {
+      nextTeam.search = undefined;
       nextTeam = nextTeam.getNext()!;
+    }
     turnTeam.myTurn = false;
     nextTeam.myTurn = true;
   }

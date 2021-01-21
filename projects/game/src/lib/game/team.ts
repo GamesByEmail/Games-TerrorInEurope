@@ -63,6 +63,21 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
     } else if (this.isInformantNetwork()) {
       state = <IInformantNetworkState>state;
       this.agedMoveNumber = state.a;
+      this.search = state.s;
+      this.game.searchedRegions.length = 0;
+      this.game.searchedCity = -1;
+      this.game.searchResult = undefined;
+      if (this.search)
+        if (this.search.t === ESearchType.CITY) {
+          if (this.search.a! < 0)
+            this.game.searchedCity = this.search.d[0];
+        } else {
+          this.game.searchedRegions = this.game.board.territories
+            .filter(city => this.search!.d.includes(city.index))
+            .map(city => city.region)
+            .filter((r, i, a) => a.indexOf(r) === i);
+          this.game.searchResult = this.search.a;
+        }
     } else {
       state = <ITerroristState>state;
       if (typeof (state.c) === "number" && state.c >= 0)
@@ -89,11 +104,17 @@ export class Team extends BaseTeam<Game, IGameOptions, IGameState, IGameSave, Bo
         c: this.city ? this.city.index : -1,
         s: this.strength
       } as IOperativeState;
-    else if (this.isInformantNetwork())
+    else if (this.isInformantNetwork()) {
       state = {
         a: this.agedMoveNumber
       } as IInformantNetworkState;
-    else {
+      if (this.search)
+        state.s = {
+          t: this.search.t as ESearchType.REGION,
+          d: this.search.d.slice(),
+          a: <any>this.search.a
+        };
+    } else {
       state = {
         v: this.viktoryPoints,
         s: this.strength

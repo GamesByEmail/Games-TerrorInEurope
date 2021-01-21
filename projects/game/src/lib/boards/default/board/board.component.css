@@ -134,76 +134,107 @@
   pointer-events: none;
 }
 
-.land {
+.landback,
+.landfore {
   stroke-linejoin: round;
   stroke-width: 6;
   fill: transparent;
   transition: transform 0.5s;
 }
-
-.seachableLands.allSearchable:hover .lands.searchable .land,
-.seachableLands:not(.allSearchable) .lands.searchable:hover .land {
+.lands.searched.searchYes .landfore {
+  fill: url('#RegionYes');
+}
+.lands.searched.searchNo .landfore {
+  fill: url('#RegionNo');
+}
+.seachableLands.allSearchable:hover .lands.searchable .landback,
+.seachableLands.allSearchable:hover .lands.searchable .landfore,
+.seachableLands:not(.allSearchable) .lands.searchable:hover .landback,
+.seachableLands:not(.allSearchable) .lands.searchable:hover .landfore {
   transform: scale(1.1);
 }
-
-.British .land {
-  stroke: rgb(233, 205, 7);
+.British .landback {
   fill: rgb(252, 235, 125);
 }
+.British .landfore {
+  stroke: rgb(233, 205, 7);
+}
 
-.Nordic .land {
-  stroke: rgb(63, 154, 88);
+.Nordic .landback {
   fill: rgb(139, 207, 156);
 }
+.Nordic .landfore {
+  stroke: rgb(63, 154, 88);
+}
 
-.Iberian .land {
-  stroke: rgb(204, 98, 98);
+.Iberian .landback {
   fill: rgb(216, 136, 137);
 }
+.Iberian .landfore {
+  stroke: rgb(204, 98, 98);
+}
 
-.Franco .land {
-  stroke: rgb(5, 112, 106);
+.Franco .landback {
   fill: rgb(12, 167, 159);
 }
+.Franco .landfore {
+  stroke: rgb(5, 112, 106);
+}
 
-.German .land {
-  stroke: rgb(147, 141, 136);
+.German .landback {
   fill: rgb(186, 182, 177);
 }
+.German .landfore {
+  stroke: rgb(147, 141, 136);
+}
 
-.Slavic .land {
-  stroke: rgb(46, 115, 156);
+.Slavic .landback {
   fill: rgb(89, 163, 206);
 }
+.Slavic .landfore {
+  stroke: rgb(46, 115, 156);
+}
 
-.Baltic .land {
-  stroke: rgb(141, 65, 67);
+.Baltic .landback {
   fill: rgb(180, 92, 95);
 }
-
-.African .land {
-  stroke: rgb(69, 120, 56);
-  fill: rgb(96, 164, 79);
+.Baltic .landfore {
+  stroke: rgb(141, 65, 67);
 }
 
-.Italian .land {
-  stroke: rgb(104, 88, 124);
+.African .landback {
+  fill: rgb(96, 164, 79);
+}
+.African .landfore {
+  stroke: rgb(69, 120, 56);
+}
+
+.Italian .landback {
   fill: rgb(146, 131, 165);
 }
+.Italian .landfore {
+  stroke: rgb(104, 88, 124);
+}
 
-.Balkan .land {
-  stroke: rgb(230, 133, 53);
+.Balkan .landback {
   fill: rgb(238, 173, 119);
 }
-
-.Ukrainian .land {
-  stroke: rgb(151, 134, 83);
-  fill: rgb(183, 169, 125);
+.Balkan .landfore {
+  stroke: rgb(230, 133, 53);
 }
 
-.Turk .land {
-  stroke: rgb(69, 120, 56);
+.Ukrainian .landback {
+  fill: rgb(183, 169, 125);
+}
+.Ukrainian .landfore {
+  stroke: rgb(151, 134, 83);
+}
+
+.Turk .landback {
   fill: rgb(96, 164, 79);
+}
+.Turk .landfore {
+  stroke: rgb(69, 120, 56);
 }
 
 .urbanPair {

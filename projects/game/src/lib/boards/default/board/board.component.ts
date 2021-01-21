@@ -5,13 +5,14 @@ import { Game } from '../../../game/game';
 import { fromEvent, Subscription, Observable, Subject, merge } from 'rxjs';
 import { map, finalize } from 'rxjs/operators';
 import { Rectangle2D } from '@packageforge/geometry2d';
-import { cityMapData, IMapPoint } from './city-map-data';
 import { CovertOpsDialogService } from '../dialogs/covert-ops/covert-ops-dialog.service';
 import { CombatDialogService } from '../dialogs/combat/combat-dialog.service';
 import { Team } from '../../../game/team';
 import { CovertOpToken, Token } from '../../../game/pieces/token/token';
 import { ETokenResult, ETokenType } from '../../../game/team-state';
 import { InformantNetworkDialogService } from '../dialogs/informant-network/informant-network-dialog.service';
+import { regionMapData } from './region-map-data';
+import { cityMapData, IMapPoint } from './city-map-data';
 
 @Component({
   selector: 'gamesbyemail-games-terrorInEurope-default-board',
@@ -57,6 +58,7 @@ export class BoardComponent implements AfterViewInit {
   mouseup: Observable<any> = fromEvent(document, 'mouseup').pipe(map(() => undefined));
   territoryUp: Subject<Territory> = new Subject();
   viewBox: Rectangle2D = new Rectangle2D(0, 0, 100, 100);
+  regionMapData = regionMapData
 
   constructor(
     private cd: ChangeDetectorRef,

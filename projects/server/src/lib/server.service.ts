@@ -1,5 +1,5 @@
 import { BaseServer } from "./base.server";
-import { ETokenResult, ETokenType, ETokenVisibility, IOperativeState, ITerroristState, ITokenState } from "projects/game/src/lib/game/team-state";
+import { ESearchType, ETokenResult, ETokenType, ETokenVisibility, IOperativeState, ITerroristState, ITokenState } from "projects/game/src/lib/game/team-state";
 import { Game, IGameOptions, IGameState } from "projects/game/src/lib/game/game";
 import { IGameData } from "@gamesbyemail/base";
 import { TeamId } from "projects/game/src/lib/game/team-id";
@@ -24,8 +24,30 @@ export class ServerService extends BaseServer<Game, IGameState> {
     if (state.teams[4].$T && !oldState.teams[4].$T) {
       const infoState = state.teams[3];
       if (infoState.a !== state.moveNumber) {
-        infoState.a = state.moveNumber;
         const terrState = state.teams[4];
+        if (infoState.s)
+          if (infoState.s.t === ESearchType.CITY) {
+            const target = infoState.s.d[0];
+            const t = terrState.$_ && terrState.$_.t.find(t => t.c === target);
+            if (t && t.v === ETokenVisibility.HIDDEN) {
+              infoState.s.a = t.a;
+              t.v = ETokenVisibility.EXISTANCE;
+              if (!terrState.t)
+                terrState.t = [];
+              terrState.t.push({
+                c: t.c,
+                t: ETokenType.UNKNOWN,
+                a: t.a,
+                v: ETokenVisibility.VISIBLE,
+                r: t.r
+              });
+              if (t.a === 0)
+                terrState.c = terrState.$_!.c;
+            } else
+              infoState.s.a = -1;
+          } else
+            infoState.s.a = infoState.s.d.includes(terrState.$_!.c);
+        infoState.a = state.moveNumber;
         this.ageTokens(terrState);
         if (terrState.t && terrState.t.length === 0)
           delete terrState.t;
