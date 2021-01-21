@@ -83,6 +83,8 @@ export class ServerService extends BaseServer<Game, IGameState> {
     }
   }
   private ageTokens(tState: ITerroristState) {
+    if (!tState.$_)
+      return;
     const vTokens = this.ageTokensList(tState.$_!.t, 2);
     if (!tState.t)
       tState.t = [];
